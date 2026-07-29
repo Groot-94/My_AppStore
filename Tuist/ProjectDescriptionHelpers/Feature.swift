@@ -2,14 +2,14 @@ import ProjectDescription
 
 // MARK: - Core 모듈 참조 헬퍼
 //
-// Core 는 별도 프로젝트(Projects/Core)에 있으므로 project 경로 의존으로 참조한다.
+// Core 모듈은 각자 독립 프로젝트(Projects/Core/<Module>)를 갖는다 — 피처와 동일한 단위.
 
 public extension TargetDependency {
-    static let coreKit: TargetDependency = .project(target: "CoreKit", path: .relativeToRoot("Projects/Core"))
-    static let networking: TargetDependency = .project(target: "Networking", path: .relativeToRoot("Projects/Core"))
-    static let persistence: TargetDependency = .project(target: "Persistence", path: .relativeToRoot("Projects/Core"))
-    static let iTunesKit: TargetDependency = .project(target: "ITunesKit", path: .relativeToRoot("Projects/Core"))
-    static let designSystem: TargetDependency = .project(target: "DesignSystem", path: .relativeToRoot("Projects/Core"))
+    static let coreKit: TargetDependency = .project(target: "CoreKit", path: .relativeToRoot("Projects/Core/CoreKit"))
+    static let networking: TargetDependency = .project(target: "Networking", path: .relativeToRoot("Projects/Core/Networking"))
+    static let persistence: TargetDependency = .project(target: "Persistence", path: .relativeToRoot("Projects/Core/Persistence"))
+    static let iTunesKit: TargetDependency = .project(target: "ITunesKit", path: .relativeToRoot("Projects/Core/ITunesKit"))
+    static let designSystem: TargetDependency = .project(target: "DesignSystem", path: .relativeToRoot("Projects/Core/DesignSystem"))
 
     /// 타 피처의 Interface 타깃 참조(피처 → 피처는 Interface만 허용).
     static func featureInterface(_ name: String) -> TargetDependency {

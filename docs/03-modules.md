@@ -129,6 +129,7 @@ public protocol SeeAllBuilder { func build(input: SeeAllInput) -> UIViewControll
 - 동일 DI/계약을 SwiftUI(`App`/`Scene`, `TabView`)로 재조립. ViewModel 재사용. SwiftUI 뷰는 `UIHostingController`로 감싸 동일 Builder 계약을 만족.
 
 ## Tuist 실무
+- **모듈 = 프로젝트 단위**: 피처뿐 아니라 Core 모듈도 각자 독립 프로젝트(`Projects/Core/<Module>`)를 갖는다 — 모듈별 소유권·매니페스트 분리(머지 충돌 최소화), 피처와 대칭 구조.
 - `Tuist/ProjectDescriptionHelpers`에 **모듈 팩토리**(`Module.feature(name:)`)를 두어 피처 4타깃을 한 번에 생성 → 피처 추가 비용을 상수화.
 - `Interface` 타깃은 리소스 없이 최소화해 빌드 캐시 적중률을 높인다.
 - CI에서 `tuist graph`로 순환·역참조 검증.
