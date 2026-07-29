@@ -74,4 +74,41 @@ public extension Target {
             settings: .appStoreBase
         )
     }
+
+    /// 앱 타깃(피처 단독 실행 데모).
+    ///
+    /// - 소스는 `Sources/<name>/**`, 번들 리소스는 `Sources/<name>/Resources/**`.
+    /// - SceneDelegate 진입점을 InfoPlist 로 지정한다(스토리보드 미사용).
+    static func app(
+        name: String,
+        bundleId: String,
+        dependencies: [TargetDependency] = [],
+        hasResources: Bool = false
+    ) -> Target {
+        .target(
+            name: name,
+            destinations: Constants.destinations,
+            product: .app,
+            bundleId: bundleId,
+            deploymentTargets: Constants.deploymentTarget,
+            infoPlist: .extendingDefault(with: [
+                "UILaunchScreen": ["UIColorName": ""],
+                "UIApplicationSceneManifest": [
+                    "UIApplicationSupportsMultipleScenes": false,
+                    "UISceneConfigurations": [
+                        "UIWindowSceneSessionRoleApplication": [
+                            [
+                                "UISceneConfigurationName": "Default Configuration",
+                                "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate",
+                            ]
+                        ]
+                    ],
+                ],
+            ]),
+            sources: ["Sources/\(name)/**"],
+            resources: hasResources ? ["Sources/\(name)/Resources/**"] : [],
+            dependencies: dependencies,
+            settings: .appStoreBase
+        )
+    }
 }

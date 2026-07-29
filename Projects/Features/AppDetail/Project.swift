@@ -18,5 +18,7 @@ let project = Project.feature(
         .iTunesKit,
         .coreKit,
     ],
-    testHasResources: true
+    testHasResources: true,
+    testing: true,
+    example: true
 )

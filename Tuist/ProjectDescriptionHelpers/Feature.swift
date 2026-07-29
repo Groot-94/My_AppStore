@@ -15,6 +15,11 @@ public extension TargetDependency {
     static func featureInterface(_ name: String) -> TargetDependency {
         .project(target: "\(name)Interface", path: .relativeToRoot("Projects/Features/\(name)"))
     }
+
+    /// 타 피처의 Testing 타깃 참조(Example 앱이 타 피처 계약을 Mock 으로 주입).
+    static func featureTesting(_ name: String) -> TargetDependency {
+        .project(target: "\(name)Testing", path: .relativeToRoot("Projects/Features/\(name)"))
+    }
 }
 
 // MARK: - Feature 프로젝트 팩토리
@@ -32,6 +37,9 @@ public extension Project {
     ///   - tests: `true` 면 `XxxTests` 유닛 테스트 타깃 생성(Impl 을 `@testable import`).
     ///   - testDependencies: 테스트 타깃의 추가 의존(피검증 Core 모듈 등). Impl 은 자동 주입.
     ///   - testHasResources: 테스트 픽스처(`Tests/XxxTests/Fixtures/**`) 포함 여부.
+    ///   - testing: `true` 면 `XxxTesting`(계약 Mock) 프레임워크 생성 — 자기 Interface 에만 의존.
+    ///   - example: `true` 면 `XxxExample` 데모 앱 + `XxxExample-Mock` 스킴(`-useMocks` 인자) 생성.
+    ///   - exampleDependencies: Example 앱의 추가 의존(타 피처 `*Testing` 등). Impl/DesignSystem/Core 는 자동 주입.
     static func feature(
         name: String,
         interfaceDependencies: [TargetDependency] = [],
@@ -39,7 +47,10 @@ public extension Project {
         implHasResources: Bool = false,
         tests: Bool = false,
         testDependencies: [TargetDependency] = [],
-        testHasResources: Bool = false
+        testHasResources: Bool = false,
+        testing: Bool = false,
+        example: Bool = false,
+        exampleDependencies: [TargetDependency] = []
     ) -> Project {
         let interfaceTarget = Target.framework(
             name: "\(name)Interface",
@@ -69,9 +80,46 @@ public extension Project {
             targets.append(testTarget)
         }
 
+        if testing {
+            // Testing: 계약 Mock. 자기 Interface 에만 의존(UIKit 은 라벨 VC 반환용으로 link).
+            let testingTarget = Target.framework(
+                name: "\(name)Testing",
+                dependencies: [.target(name: "\(name)Interface")]
+            )
+            targets.append(testingTarget)
+        }
+
+        if example {
+            // Example: 자기 Impl + DesignSystem + Core 실구현 + (타 피처) Testing.
+            let exampleTarget = Target.app(
+                name: "\(name)Example",
+                bundleId: "\(Constants.bundleIDPrefix).example.\(name.lowercased())",
+                dependencies: [
+                    .target(name: name),
+                    .designSystem,
+                    .coreKit,
+                    .networking,
+                    .persistence,
+                    .iTunesKit,
+                ] + exampleDependencies,
+                hasResources: true
+            )
+            targets.append(exampleTarget)
+        }
+
+        // 명시적 `schemes` 를 넘기면 Tuist 자동 스킴 생성이 꺼지므로,
+        // 피처 기본 스킴(Interface/Impl/Testing/Tests 흡수) + Example 실 API/Mock 스킴을 직접 정의한다.
+        var schemes: [Scheme] = []
+        if example {
+            schemes.append(.featureDefault(name: name, hasTests: tests))
+            schemes.append(.exampleReal(name: name))
+            schemes.append(.exampleMock(name: name))
+        }
+
         return .project(
             name: name,
-            targets: targets
+            targets: targets,
+            schemes: schemes
         )
     }
 }
@@ -79,11 +127,58 @@ public extension Project {
 // MARK: - Project 편의 생성자
 
 public extension Project {
-    static func project(name: String, targets: [Target]) -> Project {
+    static func project(name: String, targets: [Target], schemes: [Scheme] = []) -> Project {
         .init(
             name: name,
             settings: .appStoreBase,
-            targets: targets
+            targets: targets,
+            schemes: schemes
+        )
+    }
+}
+
+// MARK: - 피처 스킴
+
+public extension Scheme {
+    /// 피처 기본 스킴. Impl 을 빌드하고(있으면) 유닛 테스트를 실행한다.
+    /// Interface/Testing 은 의존으로 함께 빌드된다.
+    static func featureDefault(name: String, hasTests: Bool) -> Scheme {
+        let impl = TargetReference.target(name)
+        return .scheme(
+            name: name,
+            shared: true,
+            buildAction: .buildAction(targets: [impl]),
+            testAction: hasTests
+                ? .targets([.testableTarget(target: .target("\(name)Tests"))])
+                : nil
+        )
+    }
+
+    /// `XxxExample` 스킴. 실 API 로 피처 단독 확인(런치 인자 없음).
+    static func exampleReal(name: String) -> Scheme {
+        let target = TargetReference.target("\(name)Example")
+        return .scheme(
+            name: "\(name)Example",
+            shared: true,
+            buildAction: .buildAction(targets: [target]),
+            runAction: .runAction(configuration: "Debug", executable: target)
+        )
+    }
+
+    /// `XxxExample-Mock` 스킴. `-useMocks` 실행 인자를 켜 번들 픽스처 스텁으로 네트워크 없이 구동한다.
+    static func exampleMock(name: String) -> Scheme {
+        let target = TargetReference.target("\(name)Example")
+        return .scheme(
+            name: "\(name)Example-Mock",
+            shared: true,
+            buildAction: .buildAction(targets: [target]),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: target,
+                arguments: .arguments(launchArguments: [
+                    .launchArgument(name: "-useMocks", isEnabled: true)
+                ])
+            )
         )
     }
 }
