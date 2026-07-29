@@ -53,10 +53,15 @@ struct AppComposition {
         let container = makeContainer()
 
         let iTunesClient = container.resolve(ITunesClient.self)
+        let cache = container.resolve(Cache.self)
         let imageLoader = container.resolve(ImageLoading.self)
         let recentSearchStore = container.resolve(RecentSearchStore.self)
 
-        let appDetailBuilder: AppDetailBuilder = DefaultAppDetailBuilder()
+        let appDetailBuilder: AppDetailBuilder = DefaultAppDetailBuilder(
+            iTunesClient: iTunesClient,
+            cache: cache,
+            imageLoader: imageLoader
+        )
         let seeAllBuilder: SeeAllBuilder = DefaultSeeAllBuilder(appDetail: appDetailBuilder)
 
         let todayBuilder = DefaultTodayBuilder(appDetail: appDetailBuilder)
