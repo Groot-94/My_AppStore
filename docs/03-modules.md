@@ -28,7 +28,7 @@ Tuist 워크스페이스의 타깃 구성. **Core 5 + Feature(피처당 2~4타�
 | `XxxTesting` | framework | `XxxInterface` | ✕ |
 | `XxxExample` | app | `Xxx`, `XxxTesting`, DesignSystem | ○ |
 
-- Persistence를 직접 쓰는 피처: **Search**(`RecentSearchStore`), **AppDetail**(Lookup 응답 캐시). 이미지 캐시는 DesignSystem이 내부에서 사용.
+- **모든 피처 Impl은 Persistence에 의존한다** — 이미지 로딩(`ImageLoading` 프로토콜, Persistence 소유)을 Builder가 주입받기 때문. 추가로 **Search**는 `RecentSearchStore`, **AppDetail**은 Lookup 응답 캐시를 사용.
 - 피처는 Networking을 직접 의존하지 않는다 — HTTP 호출은 전부 `ITunesKit.ITunesClient`를 경유.
 
 **피처 간 의존(구현 → 타 피처 Interface)만 허용**:
