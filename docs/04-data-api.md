@@ -33,7 +33,9 @@ GET https://rss.applemarketingtools.com/api/v2/kr/apps/{feed}/{limit}/apps.json
   limit = 10 | 25 | 50 | 100
 ```
 
-응답: `{ feed: { title, results: [ {id, name, artistName, artworkUrl100, genres:[{name}], url} ] } }`
+응답: `{ feed: { title, results: [ {id, name, artistName, artworkUrl100, genres:[{genreId, name, url}], url} ] } }`
+
+> 실응답 주의: RSS는 301 리다이렉트로 응답(URLSession 자동 처리). `genres`가 **빈 배열로 오는 경우가 있음**(top-free에서 관찰) — 디코더에서 기본 `[]` 처리.
 
 > RSS 항목은 **필드가 적다**(스크린샷/설명/평점 없음). 상세가 필요하면 `id`로 **Lookup**을 이어서 호출한다(차트 → id 수집 → lookup 배치).
 > RSS에 게임 전용 피드는 없다 — 게임 차트는 `genres`에 "Games" 포함 항목을 필터해 만든다(→ [05-features/games](05-features/games.md)).
@@ -45,7 +47,7 @@ GET https://rss.applemarketingtools.com/api/v2/kr/apps/{feed}/{limit}/apps.json
 | `trackId` | 앱 고유 ID (엔티티 id) |
 | `trackName` | 앱 이름 |
 | `artistName` / `sellerName` | 개발사 |
-| `primaryGenreName`, `genres[]` | 카테고리 |
+| `primaryGenreName`, `genres[]` | 카테고리 — Search/Lookup의 `genres`는 **문자열 배열**(RSS는 객체 배열, 별도 DTO) |
 | `artworkUrl512` / `artworkUrl100` / `artworkUrl60` | 아이콘 |
 | `screenshotUrls[]`, `ipadScreenshotUrls[]` | 스크린샷 |
 | `description`, `releaseNotes` | 설명 / 새 소식 |
@@ -53,7 +55,7 @@ GET https://rss.applemarketingtools.com/api/v2/kr/apps/{feed}/{limit}/apps.json
 | `formattedPrice`, `price`, `currency` | 가격 표시 |
 | `version`, `currentVersionReleaseDate` | 버전 / 갱신일 |
 | `contentAdvisoryRating` | 연령 등급 |
-| `fileSizeBytes`, `minimumOsVersion` | 크기 / 최소 OS |
+| `fileSizeBytes`, `minimumOsVersion` | 크기 / 최소 OS — `fileSizeBytes`는 **문자열**로 반환됨 |
 | `languageCodesISO2A[]` | 지원 언어 |
 
 ## 공용 DTO · 클라이언트 (ITunesKit 소유)
@@ -66,7 +68,7 @@ public struct ITunesSearchResponse: Decodable, Sendable {
     public let resultCount: Int
     public let results: [ITunesAppDTO]
 }
-public struct ITunesAppDTO: Decodable, Sendable { /* 위 필드 표의 원본 필드들 */ }
+public struct ITunesAppDTO: Decodable, Sendable { /* 위 필드 표의 원본 필드들 — 실응답에서 자주 누락되므로 대부분 옵셔널 */ }
 public struct RSSEntryDTO: Decodable, Sendable {
     public let id: String
     public let name: String

@@ -50,4 +50,26 @@ public extension Target {
             settings: .appStoreBase
         )
     }
+
+    /// 유닛 테스트 번들 타깃.
+    ///
+    /// - 소스는 `Tests/<name>/**`, 리소스는 `Tests/<name>/Fixtures/**`(선택).
+    /// - `dependencies` 로 피검증 프레임워크 타깃을 넣는다.
+    static func unitTest(
+        name: String,
+        dependencies: [TargetDependency] = [],
+        hasResources: Bool = false
+    ) -> Target {
+        .target(
+            name: name,
+            destinations: Constants.destinations,
+            product: .unitTests,
+            bundleId: "\(Constants.bundleIDPrefix).\(name.lowercased())",
+            deploymentTargets: Constants.deploymentTarget,
+            sources: ["Tests/\(name)/**"],
+            resources: hasResources ? ["Tests/\(name)/Fixtures/**"] : [],
+            dependencies: dependencies,
+            settings: .appStoreBase
+        )
+    }
 }

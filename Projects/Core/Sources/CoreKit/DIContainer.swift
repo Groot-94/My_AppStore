@@ -3,7 +3,7 @@ import Foundation
 /// 의존성 획득 계약 (UI 비의존).
 ///
 /// 피처는 Core 인프라를 이 `DIResolver` 로 획득한다.
-public protocol DIResolver: AnyObject {
+public protocol DIResolver: AnyObject, Sendable {
     func resolve<T>(_ type: T.Type) -> T
 }
 
@@ -11,21 +11,30 @@ public protocol DIResolver: AnyObject {
 ///
 /// Composition Root(AppUIKit)에서 Core 구현체를 등록하고, 피처가 `resolve` 로 획득한다.
 /// 등록은 팩토리 클로저로 보관해 지연 생성한다.
-public final class DIContainer: DIResolver {
-    private var factories: [ObjectIdentifier: () -> Any] = [:]
+///
+/// 스레드 안전: 내부 저장소를 `NSLock` 으로 보호한다. Swift 6 strict concurrency 하에서
+/// `Sendable` 을 만족하기 위해 팩토리 클로저는 `@Sendable` 로 제한한다(등록되는 값은
+/// 대부분 `Sendable` 서비스 또는 App 부팅 시점에 만들어지는 UI 객체다).
+public final class DIContainer: DIResolver, @unchecked Sendable {
+    private let lock = NSLock()
+    private var factories: [ObjectIdentifier: @Sendable () -> Any] = [:]
 
     public init() {}
 
     /// 타입에 대한 생성 팩토리 등록.
-    public func register<T>(_ type: T.Type, factory: @escaping () -> T) {
+    public func register<T>(_ type: T.Type, factory: @escaping @Sendable () -> T) {
+        lock.lock()
+        defer { lock.unlock() }
         factories[ObjectIdentifier(type)] = factory
     }
 
     /// 등록된 타입 획득. 미등록이면 프로그래머 오류로 간주.
     public func resolve<T>(_ type: T.Type) -> T {
-        guard let factory = factories[ObjectIdentifier(type)],
-              let value = factory() as? T
-        else {
+        lock.lock()
+        let factory = factories[ObjectIdentifier(type)]
+        lock.unlock()
+
+        guard let factory, let value = factory() as? T else {
             preconditionFailure("DIContainer: \(T.self) 미등록")
         }
         return value

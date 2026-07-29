@@ -32,5 +32,29 @@ let project = Project.project(
                 .target(name: "Persistence"),
             ]
         ),
+        // MARK: 테스트 타깃 (M1)
+        .unitTest(
+            name: "NetworkingTests",
+            dependencies: [
+                .target(name: "Networking"),
+                .target(name: "CoreKit"),
+            ]
+        ),
+        .unitTest(
+            name: "ITunesKitTests",
+            dependencies: [
+                .target(name: "ITunesKit"),
+                .target(name: "Networking"),
+                .target(name: "CoreKit"),
+            ],
+            hasResources: true
+        ),
+        .unitTest(
+            name: "PersistenceTests",
+            dependencies: [
+                .target(name: "Persistence"),
+                .target(name: "CoreKit"),
+            ]
+        ),
     ]
 )

@@ -30,6 +30,7 @@ let project = Project(
             dependencies: [
                 // Core
                 .coreKit,
+                .networking,
                 .iTunesKit,
                 .persistence,
                 .designSystem,

@@ -1,5 +1,8 @@
 import UIKit
 import CoreKit
+import Networking
+import Persistence
+import ITunesKit
 // 피처 Impl (App 만 구현을 안다) + Interface(계약 타입)
 import AppDetail
 import AppDetailInterface
@@ -15,15 +18,33 @@ import Arcade
 /// DI 컨테이너 구성 + 각 피처 Builder 구현체 생성 + 상호 계약 주입 + 탭 조립.
 struct AppComposition {
 
-    /// DI 컨테이너 구성(M0: StoreConfig 등록 정도).
+    /// DI 컨테이너 구성. Core 구현체 등록(docs/08 부팅 흐름).
+    ///
+    /// M1: StoreConfig / NetworkClient / ITunesClient / Cache / ImageLoading 등록.
+    /// 피처 Repository 배선은 M2 이후.
     private func makeContainer() -> DIContainer {
         let container = DIContainer()
-        container.register(StoreConfig.self) { .korea }
+
+        let config = StoreConfig.korea
+        container.register(StoreConfig.self) { config }
+
+        let networkClient: NetworkClient = URLSessionNetworkClient()
+        container.register(NetworkClient.self) { networkClient }
+
+        let iTunesClient: ITunesClient = DefaultITunesClient(network: networkClient, config: config)
+        container.register(ITunesClient.self) { iTunesClient }
+
+        let cache: Cache = DefaultCache()
+        container.register(Cache.self) { cache }
+
+        let imageLoader: ImageLoading = DefaultImageLoader(cache: cache)
+        container.register(ImageLoading.self) { imageLoader }
+
         return container
     }
 
     func makeRootTabBarController() -> UITabBarController {
-        _ = makeContainer() // M0: 구성만 확인. Core 구현 등록은 M1.
+        _ = makeContainer() // M1: Core 구현 등록. 피처 배선은 M2 이후.
 
         // 1) 타 피처가 계약으로 주입받는 Builder 구현체 생성.
         let appDetailBuilder: AppDetailBuilder = DefaultAppDetailBuilder()

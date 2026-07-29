@@ -1,0 +1,55 @@
+# SwiftLint 설정 (docs/07 "기계 검증" 조항)
+# - 기본 룰 + 커스텀 룰: 피처 Domain/ 폴더의 UI/네트워크 계층 import 차단.
+
+included:
+  - Projects
+
+excluded:
+  - "**/Derived"
+  - "**/.build"
+  - Tuist
+  - "**/Tests"
+
+# 들여쓰기 4스페이스(docs/07).
+indentation: 4
+
+line_length:
+  warning: 140
+  error: 200
+  ignores_comments: true
+
+type_body_length:
+  warning: 400
+  error: 500
+
+file_length:
+  warning: 500
+  error: 800
+
+identifier_name:
+  min_length: 1        # id, ok 등 짧은 이름 허용
+  excluded:
+    - id
+    - x
+    - y
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+disabled_rules:
+  - todo               # 로드맵 상 M2+ 표시용 주석 허용
+  - trailing_comma     # 다줄 리터럴 후행 콤마 스타일 사용
+
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+
+# 계층 경계 강제(docs/07): 피처 Domain/ 폴더에서 UI/데이터 계층 import 금지.
+custom_rules:
+  domain_no_ui_or_data_import:
+    name: "Domain 계층 import 위반"
+    included: ".*/Domain/.*\\.swift"
+    regex: "import\\s+(UIKit|ITunesKit|Networking)\\b"
+    message: "Domain 폴더는 UIKit/ITunesKit/Networking 을 import 할 수 없습니다(순수 Swift 유지)."
+    severity: error
