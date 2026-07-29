@@ -1,0 +1,31 @@
+{
+  "resultCount": 3,
+  "results": [
+    {
+      "trackId": 1098342019,
+      "trackName": "Sneaky Sasquatch",
+      "primaryGenreName": "게임",
+      "genres": ["게임", "어드벤처"],
+      "artworkUrl512": "https://example.com/sasquatch512.png",
+      "artworkUrl100": "https://example.com/sasquatch100.png",
+      "price": 0
+    },
+    {
+      "trackId": 1315612020,
+      "trackName": "Grindstone",
+      "primaryGenreName": "게임",
+      "genres": ["게임", "퍼즐"],
+      "artworkUrl512": "https://example.com/grindstone512.png",
+      "artworkUrl100": "https://example.com/grindstone100.png",
+      "price": 0
+    },
+    {
+      "trackId": 1361926670,
+      "trackName": "Hot Lava",
+      "primaryGenreName": "게임",
+      "genres": ["게임", "액션"],
+      "artworkUrl100": "https://example.com/hotlava100.png",
+      "price": 0
+    }
+  ]
+}

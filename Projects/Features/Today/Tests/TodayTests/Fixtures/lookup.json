@@ -1,0 +1,34 @@
+{
+  "resultCount": 3,
+  "results": [
+    {
+      "trackId": 362057947,
+      "trackName": "카카오톡 KakaoTalk",
+      "primaryGenreName": "소셜 네트워킹",
+      "genres": ["소셜 네트워킹", "생산성"],
+      "artworkUrl512": "https://example.com/kakao512.png",
+      "artworkUrl100": "https://example.com/kakao100.png",
+      "formattedPrice": "무료",
+      "price": 0
+    },
+    {
+      "trackId": 839333328,
+      "trackName": "토스",
+      "primaryGenreName": "금융",
+      "genres": ["금융"],
+      "artworkUrl512": "https://example.com/toss512.png",
+      "artworkUrl100": "https://example.com/toss100.png",
+      "formattedPrice": "무료",
+      "price": 0
+    },
+    {
+      "trackId": 1018769995,
+      "trackName": "당근",
+      "primaryGenreName": "쇼핑",
+      "genres": ["쇼핑"],
+      "artworkUrl100": "https://example.com/daangn100.png",
+      "formattedPrice": "무료",
+      "price": 0
+    }
+  ]
+}
