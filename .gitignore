@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Xcode
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+DerivedData/
+build/
+
+# Tuist (생성물 — Project.swift/Workspace.swift로부터 재생성)
+*.xcodeproj
+*.xcworkspace
+Derived/
+.build/
+Tuist/.build/
+graph.png
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+
+# 로컬 전용 (공개 리포지토리 제외)
+CLAUDE.md
+.claude/
+
+# 기타
+*.log
+*.moved-aside
