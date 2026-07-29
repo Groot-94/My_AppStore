@@ -1,0 +1,116 @@
+import Testing
+import Foundation
+@testable import Search
+
+@MainActor
+@Suite("SearchViewModel")
+struct SearchViewModelTests {
+
+    private func makeViewModel(
+        outcome: MockSearchRepository.Outcome = .success([]),
+        recents: [String] = []
+    ) -> (SearchViewModel, MockSearchRepository, MockRecentSearches) {
+        let repo = MockSearchRepository(outcome: outcome)
+        let recentStore = MockRecentSearches(terms: recents)
+        let useCase = DefaultSearchAppsUseCase(repository: repo, recentSearches: recentStore)
+        let viewModel = SearchViewModel(useCase: useCase, recentSearches: recentStore)
+        return (viewModel, repo, recentStore)
+    }
+
+    @Test("초기 상태는 idle(최근 검색어)")
+    func initialIdleWithRecents() {
+        let (viewModel, _, _) = makeViewModel(recents: ["a", "b"])
+        #expect(viewModel.state == .idle(["a", "b"]))
+    }
+
+    @Test("결과 있으면 loaded 로 전이")
+    func transitionsToLoaded() async {
+        let items = [TestSupport.item(id: 1)]
+        let (viewModel, _, _) = makeViewModel(outcome: .success(items))
+        await viewModel.search(term: "kakao")
+        #expect(viewModel.state == .loaded(items))
+    }
+
+    @Test("결과 0건이면 empty(term)")
+    func transitionsToEmpty() async {
+        let (viewModel, _, _) = makeViewModel(outcome: .success([]))
+        await viewModel.search(term: "xyz")
+        #expect(viewModel.state == .empty("xyz"))
+    }
+
+    @Test("실패면 failed")
+    func transitionsToFailed() async {
+        let (viewModel, _, _) = makeViewModel(outcome: .failure)
+        await viewModel.search(term: "kakao")
+        if case .failed = viewModel.state {} else {
+            Issue.record("expected failed, got \(viewModel.state)")
+        }
+    }
+
+    @Test("빈/공백 검색어는 무시하고 idle 유지")
+    func ignoresBlankTerm() async {
+        let (viewModel, repo, _) = makeViewModel(recents: ["a"])
+        await viewModel.search(term: "   ")
+        #expect(viewModel.state == .idle(["a"]))
+        #expect(repo.receivedTerms.isEmpty)
+    }
+
+    @Test("연속 검색 시 이전 요청 취소 — 최신 결과만 반영")
+    func cancelsPreviousSearch() async {
+        let (viewModel, repo, _) = makeViewModel()
+        // 첫 검색은 지연시켜, 두 번째 검색이 취소하도록 유도.
+        repo.set(.delayed([TestSupport.item(id: 99, name: "stale")], 500_000_000))
+        let first = Task { await viewModel.search(term: "slow") }
+
+        // 잠깐 양보해 첫 Task 가 loading 진입하도록.
+        await Task.yield()
+
+        repo.set(.success([TestSupport.item(id: 1, name: "fresh")]))
+        await viewModel.search(term: "fast")
+        _ = await first.value
+
+        // 최신(fast) 결과만 반영, 취소된 stale 은 무시.
+        #expect(viewModel.state == .loaded([TestSupport.item(id: 1, name: "fresh")]))
+    }
+
+    @Test("selectRecent 은 즉시 검색 실행")
+    func selectRecentSearches() async {
+        let items = [TestSupport.item(id: 7)]
+        let (viewModel, repo, _) = makeViewModel(outcome: .success(items))
+        await viewModel.selectRecent("지도")
+        #expect(repo.receivedTerms == ["지도"])
+        #expect(viewModel.state == .loaded(items))
+    }
+
+    @Test("clearRecents 는 저장소 비우고 idle([]) 로")
+    func clearRecents() {
+        let (viewModel, _, recentStore) = makeViewModel(recents: ["a", "b"])
+        viewModel.clearRecents()
+        #expect(recentStore.clearCallCount == 1)
+        #expect(viewModel.state == .idle([]))
+    }
+
+    @Test("cancelSearch 는 idle(최근 검색어)로 복귀")
+    func cancelReturnsToIdle() async {
+        let items = [TestSupport.item(id: 1)]
+        let (viewModel, _, recentStore) = makeViewModel(outcome: .success(items), recents: [])
+        await viewModel.search(term: "kakao")
+        #expect(viewModel.state == .loaded(items))
+        // 검색으로 최근 검색어가 저장됐으므로 cancel 시 그 목록으로 idle.
+        viewModel.cancelSearch()
+        #expect(viewModel.state == .idle(recentStore.recentTerms()))
+    }
+
+    @Test("retry 는 직전 term 으로 재검색")
+    func retryReusesLastTerm() async {
+        let (viewModel, repo, _) = makeViewModel(outcome: .failure)
+        await viewModel.search(term: "kakao")
+        if case .failed = viewModel.state {} else {
+            Issue.record("expected failed")
+        }
+        repo.set(.success([TestSupport.item(id: 1)]))
+        await viewModel.retry()
+        #expect(repo.receivedTerms == ["kakao", "kakao"])
+        #expect(viewModel.state == .loaded([TestSupport.item(id: 1)]))
+    }
+}

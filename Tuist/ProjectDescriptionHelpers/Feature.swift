@@ -28,10 +28,16 @@ public extension Project {
     ///   - name: 피처 이름(PascalCase). 예: `Search`.
     ///   - interfaceDependencies: `XxxInterface` 가 소유 타입 계약을 위해 필요로 하는 추가 의존(기본 CoreKit + UIKit link).
     ///   - implDependencies: `Xxx`(Impl) 의 추가 의존. 자기 Interface + ITunesKit + DesignSystem 은 자동 주입.
+    ///   - tests: `true` 면 `XxxTests` 유닛 테스트 타깃 생성(Impl 을 `@testable import`).
+    ///   - testDependencies: 테스트 타깃의 추가 의존(피검증 Core 모듈 등). Impl 은 자동 주입.
+    ///   - testHasResources: 테스트 픽스처(`Tests/XxxTests/Fixtures/**`) 포함 여부.
     static func feature(
         name: String,
         interfaceDependencies: [TargetDependency] = [],
-        implDependencies: [TargetDependency] = []
+        implDependencies: [TargetDependency] = [],
+        tests: Bool = false,
+        testDependencies: [TargetDependency] = [],
+        testHasResources: Bool = false
     ) -> Project {
         let interfaceTarget = Target.framework(
             name: "\(name)Interface",
@@ -49,9 +55,20 @@ public extension Project {
             ] + implDependencies
         )
 
+        var targets: [Target] = [interfaceTarget, implTarget]
+
+        if tests {
+            let testTarget = Target.unitTest(
+                name: "\(name)Tests",
+                dependencies: [.target(name: name)] + testDependencies,
+                hasResources: testHasResources
+            )
+            targets.append(testTarget)
+        }
+
         return .project(
             name: name,
-            targets: [interfaceTarget, implTarget]
+            targets: targets
         )
     }
 }

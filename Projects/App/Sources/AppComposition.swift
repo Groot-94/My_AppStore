@@ -40,11 +40,20 @@ struct AppComposition {
         let imageLoader: ImageLoading = DefaultImageLoader(cache: cache)
         container.register(ImageLoading.self) { imageLoader }
 
+        let recentSearchStore: RecentSearchStore = DefaultRecentSearchStore()
+        container.register(RecentSearchStore.self) { recentSearchStore }
+
         return container
     }
 
+    @MainActor
     func makeRootTabBarController() -> UITabBarController {
-        _ = makeContainer() // M1: Core 구현 등록. 피처 배선은 M2 이후.
+        let container = makeContainer() // Core 구현 등록.
+
+        // Core 인프라 획득(피처 배선용).
+        let iTunesClient = container.resolve(ITunesClient.self)
+        let imageLoader = container.resolve(ImageLoading.self)
+        let recentSearchStore = container.resolve(RecentSearchStore.self)
 
         // 1) 타 피처가 계약으로 주입받는 Builder 구현체 생성.
         let appDetailBuilder: AppDetailBuilder = DefaultAppDetailBuilder()
@@ -55,7 +64,12 @@ struct AppComposition {
         let gamesBuilder = DefaultGamesBuilder(appDetail: appDetailBuilder, seeAll: seeAllBuilder)
         let appsBuilder = DefaultAppsBuilder(appDetail: appDetailBuilder, seeAll: seeAllBuilder)
         let arcadeBuilder = DefaultArcadeBuilder(appDetail: appDetailBuilder)
-        let searchBuilder = DefaultSearchBuilder(appDetail: appDetailBuilder)
+        let searchBuilder = DefaultSearchBuilder(
+            iTunesClient: iTunesClient,
+            recentSearchStore: recentSearchStore,
+            imageLoader: imageLoader,
+            appDetail: appDetailBuilder
+        )
 
         // 3) 탭 순서: [Today | Games | Apps | Arcade | Search]
         let tabs: [(title: String, symbol: String, root: UIViewController)] = [
@@ -78,6 +92,13 @@ struct AppComposition {
 
         let tabBar = UITabBarController()
         tabBar.viewControllers = controllers
+
+        // 스크린샷/UITest 지원: `-initialTab <index>` 로 시작 탭 지정(없으면 기본 0).
+        // NSArgumentDomain 은 값을 문자열로 저장하므로 integer(forKey:) 로 읽는다.
+        let requestedTab = UserDefaults.standard.integer(forKey: "initialTab")
+        if requestedTab > 0, requestedTab < controllers.count {
+            tabBar.selectedIndex = requestedTab
+        }
         return tabBar
     }
 }
