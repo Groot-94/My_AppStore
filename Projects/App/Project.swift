@@ -1,7 +1,14 @@
+//
+//  Project.swift
+//  App
+//
+//  Created by groot on 7/29/26.
+//
+
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// AppUIKit — Composition Root. 모든 피처 Impl + Core 의존.
+/// AppUIKit — Composition Root.
 let project = Project(
     name: "App",
     settings: .appStoreBase,
@@ -34,7 +41,7 @@ let project = Project(
                 .iTunesKit,
                 .persistence,
                 .designSystem,
-                // 모든 피처 Impl (App 만 구현을 안다)
+                // 모든 피처 Impl
                 .project(target: "Today", path: .relativeToRoot("Projects/Features/Today")),
                 .project(target: "Games", path: .relativeToRoot("Projects/Features/Games")),
                 .project(target: "Apps", path: .relativeToRoot("Projects/Features/Apps")),

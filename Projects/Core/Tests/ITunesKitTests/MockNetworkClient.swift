@@ -1,11 +1,15 @@
+//
+//  MockNetworkClient.swift
+//  ITunesKitTests
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import os
 import Networking
 
-/// 테스트용 `NetworkClient` 목. 엔드포인트 경로별로 픽스처 데이터를 반환한다.
-///
-/// 요청된 엔드포인트를 기록해 DefaultITunesClient 의 요청 구성을 검증한다.
-/// async 컨텍스트에서 안전하도록 `OSAllocatedUnfairLock` 으로 상태를 보호한다.
+/// 테스트용 `NetworkClient` 목. 경로별 픽스처를 반환하고 요청 엔드포인트를 기록한다.
 final class MockNetworkClient: NetworkClient, @unchecked Sendable {
     private struct StateBox {
         var responses: [String: Data] = [:]

@@ -1,16 +1,20 @@
+//
+//  AppIconView.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import Persistence
 
 /// 앱 아이콘 뷰. `ImageLoading` 을 주입받아 URL 이미지를 비동기 로드한다.
-///
-/// 엔티티 비의존 — URL 과 코너 반경만 입력받는다. 다크모드는 플레이스홀더 시맨틱 컬러로 대응.
 public final class AppIconView: UIImageView {
     private var loader: ImageLoading?
     private var currentURL: URL?
     private var loadTask: Task<Void, Never>?
 
-    /// - Parameters:
-    ///   - cornerRadius: 아이콘 둥근 정도(기본 12).
+    /// - Parameter cornerRadius: 아이콘 둥근 정도(기본 12).
     public init(cornerRadius: CGFloat = 12) {
         super.init(frame: .zero)
         contentMode = .scaleAspectFill

@@ -1,3 +1,10 @@
+//
+//  SeeAllBuilder.swift
+//  SeeAllInterface
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 
 /// 차트 피드 종류. Interface 가 소유(ITunesKit 비의존 유지).

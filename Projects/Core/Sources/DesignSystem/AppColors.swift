@@ -1,3 +1,10 @@
+//
+//  AppColors.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 
 /// 공통 색상 팔레트. 다크모드 대응을 위해 시스템/시맨틱 컬러 우선.

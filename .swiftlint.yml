@@ -44,6 +44,17 @@ disabled_rules:
 opt_in_rules:
   - empty_count
   - closure_spacing
+  - file_header
+
+# Xcode 표준 파일 헤더 강제(included: Projects → 루트 매니페스트는 영향 없음).
+file_header:
+  required_pattern: |
+                    \/\/
+                    \/\/  SWIFTLINT_CURRENT_FILENAME
+                    \/\/  .*
+                    \/\/
+                    \/\/  Created by groot on 7\/29\/26\.
+                    \/\/
 
 # 계층 경계 강제(docs/07): 피처 Domain/ 폴더에서 UI/데이터 계층 import 금지.
 custom_rules:

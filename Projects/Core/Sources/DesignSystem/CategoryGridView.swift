@@ -1,3 +1,10 @@
+//
+//  CategoryGridView.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 
 /// 카테고리 그리드(정적 목록). 엔티티 비의존 — 자체 `Item` 배열 입력.

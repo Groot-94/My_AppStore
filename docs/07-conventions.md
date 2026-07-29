@@ -34,8 +34,13 @@
 - 대상 우선순위: UseCase > Mapper > ViewModel.
 - 네트워크는 `NetworkClient` 목으로 대체. 고정 JSON 픽스처 사용.
 
+## 파일 헤더 · 주석
+- 모든 소스 파일은 Xcode 표준 헤더(`파일명/모듈명/Created by`)를 갖는다 — SwiftLint `file_header` 룰로 강제.
+- 주석은 **코드로 드러나지 않는 제약**만 남긴다(동시성 근거, 외부 API 특성, 취소 시맨틱 등). 코드 재진술·설계 문서 인용·작업 과정 흔적 주석 금지.
+- public 타입/프로토콜/주요 메서드는 `///` 한 줄 요약. 아키텍처 설명은 docs/가 담당한다.
+
 ## 포매팅
-- SwiftFormat/SwiftLint 도입(설정은 M1에서 확정). 들여쓰기 4스페이스.
+- SwiftLint 도입(.swiftlint.yml — 계층 경계 custom rule + file_header 포함). 들여쓰기 4스페이스.
 
 ## 리소스
 - 정적 큐레이션 JSON은 해당 피처 `Resources/`에 위치.

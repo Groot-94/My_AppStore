@@ -1,9 +1,14 @@
+//
+//  NetworkClient.swift
+//  Networking
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import CoreKit
 
-/// 범용 HTTP 통신 추상화(iTunes 를 모르는 계층).
-///
-/// `Endpoint` 를 받아 원본 `Data` 를 반환한다. 디코딩은 프로토콜 확장이 제공한다.
+/// 범용 HTTP 통신 추상화. `Endpoint` 를 받아 원본 `Data` 를 반환한다.
 public protocol NetworkClient: Sendable {
     /// 엔드포인트에서 원본 응답 바디를 가져온다.
     func data(for endpoint: Endpoint) async throws -> Data
@@ -45,9 +50,7 @@ public struct RetryPolicy: Sendable, Equatable {
 
 // MARK: - URLSession 추상화 (테스트 주입 지점)
 
-/// `URLSession.data(for:)` 를 감싸는 최소 추상화.
-///
-/// 테스트에서 `URLProtocol` 목 없이도 스텁을 주입할 수 있게 한다.
+/// `URLSession.data(for:)` 를 감싸는 최소 추상화(테스트 스텁 주입 지점).
 public protocol HTTPDataFetching: Sendable {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }

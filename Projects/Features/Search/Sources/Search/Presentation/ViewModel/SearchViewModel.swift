@@ -1,11 +1,17 @@
+//
+//  SearchViewModel.swift
+//  Search
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import Observation
 
 /// 검색 화면 ViewModel. UI 프레임워크 비의존(@Observable + @MainActor).
 ///
-/// 상태 전이(docs/05 UI 흐름):
-///   idle([recents]) ─Return─▶ loading ─▶ loaded / empty / failed
-///   연속 검색 시 이전 Task 취소(최신 요청만 반영).
+/// 상태 전이: idle([recents]) → loading → loaded / empty / failed.
+/// 연속 검색 시 이전 Task 를 취소해 최신 요청만 반영한다.
 @Observable
 @MainActor
 public final class SearchViewModel {

@@ -1,11 +1,13 @@
+//
+//  Project.swift
+//  Core
+//
+//  Created by groot on 7/29/26.
+//
+
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// Core 5 프레임워크. 의존 매트릭스(docs/03-modules.md):
-//   Networking  → CoreKit
-//   Persistence → CoreKit
-//   ITunesKit   → CoreKit, Networking
-//   DesignSystem→ CoreKit, Persistence  (UIKit 의존)
 let project = Project.project(
     name: "Core",
     targets: [
@@ -32,7 +34,7 @@ let project = Project.project(
                 .target(name: "Persistence"),
             ]
         ),
-        // MARK: 테스트 타깃 (M1)
+        // MARK: 테스트 타깃
         .unitTest(
             name: "NetworkingTests",
             dependencies: [

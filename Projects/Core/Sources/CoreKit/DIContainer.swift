@@ -1,20 +1,21 @@
+//
+//  DIContainer.swift
+//  CoreKit
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 
-/// 의존성 획득 계약 (UI 비의존).
-///
-/// 피처는 Core 인프라를 이 `DIResolver` 로 획득한다.
+/// 의존성 획득 계약(UI 비의존).
 public protocol DIResolver: AnyObject, Sendable {
     func resolve<T>(_ type: T.Type) -> T
 }
 
 /// 경량 서비스 로케이터형 DI 컨테이너.
 ///
-/// Composition Root(AppUIKit)에서 Core 구현체를 등록하고, 피처가 `resolve` 로 획득한다.
-/// 등록은 팩토리 클로저로 보관해 지연 생성한다.
-///
-/// 스레드 안전: 내부 저장소를 `NSLock` 으로 보호한다. Swift 6 strict concurrency 하에서
-/// `Sendable` 을 만족하기 위해 팩토리 클로저는 `@Sendable` 로 제한한다(등록되는 값은
-/// 대부분 `Sendable` 서비스 또는 App 부팅 시점에 만들어지는 UI 객체다).
+/// 저장소를 `NSLock` 으로 보호하므로 `@unchecked Sendable`. 팩토리 클로저는 `@Sendable`
+/// 로 제한된다(등록 값은 대부분 Sendable 서비스이거나 부팅 시점 UI 객체).
 public final class DIContainer: DIResolver, @unchecked Sendable {
     private let lock = NSLock()
     private var factories: [ObjectIdentifier: @Sendable () -> Any] = [:]

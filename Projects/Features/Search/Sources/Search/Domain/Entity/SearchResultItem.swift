@@ -1,8 +1,13 @@
+//
+//  SearchResultItem.swift
+//  Search
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 
-/// 검색 결과 목록 항목(Search 피처 소유 엔티티).
-///
-/// 목록 표시에 필요한 필드만 갖는다(상세 전용 필드는 배제 — docs/02 "화면별 과잉 스펙" 회피).
+/// 검색 결과 목록 항목(Search 피처 소유 엔티티). 목록 표시에 필요한 필드만 갖는다.
 public struct SearchResultItem: Sendable, Equatable, Identifiable {
     /// iTunes `trackId`.
     public let id: Int

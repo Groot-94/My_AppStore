@@ -1,9 +1,14 @@
+//
+//  AppRowCell.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import Persistence
 
 /// 목록 행 셀(아이콘·이름·부제·평점·받기). Search 결과/차트 행 공용.
-///
-/// 엔티티 비의존 — 자체 `Model` 로 입력받는다(피처가 엔티티→Model 변환).
 public final class AppRowCell: UITableViewCell {
     public static let reuseID = "AppRowCell"
 

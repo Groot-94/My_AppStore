@@ -1,3 +1,10 @@
+//
+//  DefaultArcadeBuilder.swift
+//  Arcade
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import ArcadeInterface
 import AppDetailInterface

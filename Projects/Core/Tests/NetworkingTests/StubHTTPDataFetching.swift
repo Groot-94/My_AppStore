@@ -1,9 +1,14 @@
+//
+//  StubHTTPDataFetching.swift
+//  NetworkingTests
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 @testable import Networking
 
-/// 테스트용 `HTTPDataFetching` 스텁. 응답 또는 에러를 미리 지정한다.
-///
-/// 재시도 검증을 위해 호출 횟수를 센다(actor 로 동시성 안전).
+/// 테스트용 `HTTPDataFetching` 스텁. 응답/에러를 미리 지정하고 호출 횟수를 센다.
 actor StubHTTPDataFetching: HTTPDataFetching {
     enum Outcome {
         case success(Data, statusCode: Int)

@@ -1,3 +1,10 @@
+//
+//  SceneDelegate.swift
+//  AppUIKit
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {

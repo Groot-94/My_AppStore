@@ -1,10 +1,17 @@
+//
+//  DefaultITunesClient.swift
+//  ITunesKit
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import Networking
 import CoreKit
 
-/// `ITunesClient` 기본 구현. `NetworkClient` 를 주입받고 `StoreConfig` 로 country/lang 적용.
+/// `ITunesClient` 기본 구현. `NetworkClient` 주입 + `StoreConfig` 로 country/lang 적용.
 ///
-/// DTO 만 반환한다 — 엔티티 매핑은 각 피처가 소유(docs/03).
+/// DTO 만 반환한다 — 엔티티 매핑은 각 피처가 소유.
 public struct DefaultITunesClient: ITunesClient {
     private let network: NetworkClient
     private let config: StoreConfig

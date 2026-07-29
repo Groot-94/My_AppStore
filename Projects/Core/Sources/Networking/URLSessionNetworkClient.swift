@@ -1,11 +1,14 @@
+//
+//  URLSessionNetworkClient.swift
+//  Networking
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import CoreKit
 
-/// `URLSession` 기반 `NetworkClient` 구현.
-///
-/// - 요청 빌더(`Endpoint` → `URLRequest`)로 요청 생성
-/// - HTTP 상태 검사(200..<300) 후 `NetworkError` 매핑
-/// - 전송 실패 시 `RetryPolicy` 만큼 재시도
+/// `URLSession` 기반 `NetworkClient` 구현. 상태 검사(200..<300) + 전송 실패 재시도.
 public struct URLSessionNetworkClient: NetworkClient {
     private let fetcher: HTTPDataFetching
     private let timeout: TimeInterval

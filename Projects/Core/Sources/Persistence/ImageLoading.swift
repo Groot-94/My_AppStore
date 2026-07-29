@@ -1,3 +1,10 @@
+//
+//  ImageLoading.swift
+//  Persistence
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 
 /// 이미지 로딩 추상화(DesignSystem 이 주입받아 사용).
@@ -6,9 +13,7 @@ public protocol ImageLoading: Sendable {
     func loadImageData(from url: URL) async throws -> Data
 }
 
-/// URLSession + Cache 기반 이미지 로더.
-///
-/// 캐시 hit 이면 네트워크를 건너뛴다. miss 이면 다운로드 후 저장한다.
+/// URLSession + Cache 기반 이미지 로더. 캐시 hit 이면 네트워크를 건너뛴다.
 public struct DefaultImageLoader: ImageLoading {
     private let session: URLSession
     private let cache: Cache

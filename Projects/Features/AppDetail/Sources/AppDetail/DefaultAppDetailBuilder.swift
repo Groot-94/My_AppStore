@@ -1,7 +1,14 @@
+//
+//  DefaultAppDetailBuilder.swift
+//  AppDetail
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import AppDetailInterface
 
-/// AppDetail 구현 Builder. M0 은 placeholder 화면만 반환한다.
+/// AppDetail 구현 Builder. 현재는 placeholder 화면을 반환한다.
 public struct DefaultAppDetailBuilder: AppDetailBuilder {
     public init() {}
 

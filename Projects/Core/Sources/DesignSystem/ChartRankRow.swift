@@ -1,9 +1,14 @@
+//
+//  ChartRankRow.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import Persistence
 
 /// 차트 순위 행(순번 + 아이콘 + 이름/장르). SeeAll·차트 목록 공용.
-///
-/// 엔티티 비의존 — 자체 `Model` 로 입력.
 public final class ChartRankRow: UICollectionViewCell {
     public static let reuseID = "ChartRankRow"
 

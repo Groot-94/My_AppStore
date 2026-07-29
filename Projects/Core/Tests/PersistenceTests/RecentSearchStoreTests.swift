@@ -1,3 +1,10 @@
+//
+//  RecentSearchStoreTests.swift
+//  PersistenceTests
+//
+//  Created by groot on 7/29/26.
+//
+
 import Testing
 import Foundation
 @testable import Persistence

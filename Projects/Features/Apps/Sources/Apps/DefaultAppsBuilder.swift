@@ -1,3 +1,10 @@
+//
+//  DefaultAppsBuilder.swift
+//  Apps
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import AppsInterface
 import AppDetailInterface

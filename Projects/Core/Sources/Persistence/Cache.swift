@@ -1,10 +1,14 @@
+//
+//  Cache.swift
+//  Persistence
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import CryptoKit
 
-/// 만료 정책이 있는 키-값 캐시(메모리 + 디스크). 단순 TTL.
-///
-/// 응답(JSON `Data`)과 이미지 `Data` 를 저장한다. 값 타입은 `Data` 로 고정 —
-/// 상위 계층이 인코딩/디코딩을 담당한다(Cache 는 바이트만 안다).
+/// 만료 정책(TTL)이 있는 키-값 캐시(메모리 + 디스크). 값은 `Data` 바이트로 고정.
 public protocol Cache: Sendable {
     /// 만료되지 않은 값을 반환. 없거나 만료면 `nil`(만료 항목은 정리).
     func data(forKey key: String) -> Data?
@@ -22,9 +26,7 @@ public extension Cache {
     }
 }
 
-/// 메모리(NSCache) + 디스크(파일) 2계층 캐시. TTL 만료 검사.
-///
-/// 스레드 안전: 메타데이터/디스크 접근을 `NSLock` 으로 보호한다.
+/// 메모리(NSCache) + 디스크(파일) 2계층 캐시. 디스크 접근을 `NSLock` 으로 보호.
 public final class DefaultCache: Cache, @unchecked Sendable {
     private final class Entry {
         let data: Data

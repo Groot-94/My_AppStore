@@ -1,8 +1,13 @@
+//
+//  NetworkError.swift
+//  Networking
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 
 /// 네트워크 계층 에러. 전송 실패 / HTTP 상태 / 디코딩 실패를 구분한다.
-///
-/// 피처가 사용자용 메시지로 변환한다(docs/07). Core 는 이 도메인 에러만 던진다.
 public enum NetworkError: Error, Sendable, Equatable {
     /// 요청 URL 을 구성하지 못함(잘못된 컴포넌트).
     case invalidURL

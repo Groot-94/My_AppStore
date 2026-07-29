@@ -1,3 +1,10 @@
+//
+//  RecentSearchStore.swift
+//  Persistence
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 
 /// 최근 검색어 저장소(Search 피처가 사용).
@@ -10,9 +17,7 @@ public protocol RecentSearchStore: Sendable {
     func clear()
 }
 
-/// UserDefaults 기반 구현. 최대 10개·중복 시 최상단 갱신(docs/05-features/search.md).
-///
-/// 스레드 안전: 읽기-수정-쓰기를 `NSLock` 으로 보호한다.
+/// UserDefaults 기반 구현. 최대 10개·중복 시 최상단 갱신. 읽기-수정-쓰기를 `NSLock` 으로 보호.
 public final class DefaultRecentSearchStore: RecentSearchStore, @unchecked Sendable {
     private let defaults: UserDefaults
     private let key: String
@@ -46,7 +51,7 @@ public final class DefaultRecentSearchStore: RecentSearchStore, @unchecked Senda
         lock.lock()
         defer { lock.unlock() }
         var terms = defaults.stringArray(forKey: key) ?? []
-        // 중복 제거(대소문자 무시하지 않음 — 검색어 원문 유지) 후 최상단 삽입.
+        // 중복 제거(원문 유지) 후 최상단 삽입.
         terms.removeAll { $0 == trimmed }
         terms.insert(trimmed, at: 0)
         if terms.count > maxCount {

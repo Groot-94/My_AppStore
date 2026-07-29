@@ -1,3 +1,10 @@
+//
+//  DefaultSeeAllBuilder.swift
+//  SeeAll
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import SeeAllInterface
 import AppDetailInterface

@@ -1,7 +1,14 @@
+//
+//  PlaceholderViewController.swift
+//  Arcade
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import DesignSystem
 
-/// M0 placeholder: 피처 이름 레이블만 중앙에 표시.
+/// Placeholder: 피처 이름 레이블만 중앙에 표시.
 final class PlaceholderViewController: UIViewController {
     private let labelText: String
 

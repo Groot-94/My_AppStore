@@ -1,3 +1,10 @@
+//
+//  SearchAppsUseCase.swift
+//  Search
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import CoreKit
 
@@ -24,7 +31,7 @@ public struct DefaultSearchAppsUseCase: SearchAppsUseCase {
         let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw CoreError.invalidInput }
 
-        // 검색 시점에 최근 검색어로 저장(결과 유무와 무관 — 사용자가 검색을 시도한 사실을 기록).
+        // 결과 유무와 무관하게 검색 시점에 최근 검색어로 저장한다.
         recentSearches.add(term: trimmed)
         return try await repository.search(term: trimmed)
     }

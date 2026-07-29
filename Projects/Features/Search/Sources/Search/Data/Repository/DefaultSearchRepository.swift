@@ -1,9 +1,16 @@
+//
+//  DefaultSearchRepository.swift
+//  Search
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import ITunesKit
 
 /// `SearchRepository` 기본 구현. `ITunesClient.search` 호출 후 DTO → 엔티티 매핑.
 public struct DefaultSearchRepository: SearchRepository {
-    /// 검색 결과 최대 개수(docs/08: limit=25).
+    /// 검색 결과 최대 개수.
     static let searchLimit = 25
 
     private let client: ITunesClient

@@ -1,3 +1,10 @@
+//
+//  SearchRecentCell.swift
+//  Search
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import DesignSystem
 

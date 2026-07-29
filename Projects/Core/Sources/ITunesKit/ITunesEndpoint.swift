@@ -1,10 +1,15 @@
+//
+//  ITunesEndpoint.swift
+//  ITunesKit
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 import Networking
 import CoreKit
 
-/// iTunes API 3종 엔드포인트 정의(docs/04-data-api.md).
-///
-/// `StoreConfig` 로 country/lang 을 적용한다. Networking 의 `Endpoint` 로 변환한다.
+/// iTunes API 3종 엔드포인트 정의. `StoreConfig` 로 country/lang 을 적용한다.
 enum ITunesEndpoint {
     static let searchHost = "itunes.apple.com"
     static let rssHost = "rss.applemarketingtools.com"

@@ -1,3 +1,10 @@
+//
+//  DefaultITunesClientTests.swift
+//  ITunesKitTests
+//
+//  Created by groot on 7/29/26.
+//
+
 import Testing
 import Foundation
 import CoreKit

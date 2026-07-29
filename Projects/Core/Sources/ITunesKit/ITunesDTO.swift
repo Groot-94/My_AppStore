@@ -1,19 +1,22 @@
+//
+//  ITunesDTO.swift
+//  ITunesKit
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 
-/// iTunes Search/Lookup 응답 래퍼. 응답 스키마 그대로(화면 개념 없음).
+/// iTunes Search/Lookup 응답 래퍼.
 public struct ITunesSearchResponse: Decodable, Sendable {
     public let resultCount: Int
     public let results: [ITunesAppDTO]
 }
 
-/// Search/Lookup App 객체 DTO(docs/04 필드 표 + 실응답 반영).
+/// Search/Lookup App 객체 DTO.
 ///
-/// 실제 iTunes 응답에서 자주 빠지는 필드는 옵셔널로 둔다.
-/// (예: 평점 없는 신규 앱은 `averageUserRating`/`userRatingCount` 누락,
-///  가격 표시가 없으면 `formattedPrice` 누락, 새 소식이 없으면 `releaseNotes` 누락.)
-///
-/// 주의: Search/Lookup 의 `genres` 는 **문자열 배열**(`["소셜 네트워킹", ...]`)이다.
-/// RSS 의 `genres`(`RSSGenreDTO` 객체 배열)와 형태가 다르다(docs/04 명세 대비 관측 차이).
+/// 실응답에서 자주 빠지는 필드는 옵셔널로 둔다.
+/// 주의: Search/Lookup 의 `genres` 는 문자열 배열로, RSS 의 객체 배열과 형태가 다르다.
 public struct ITunesAppDTO: Decodable, Sendable {
     // 식별/이름
     public let trackId: Int
@@ -60,7 +63,7 @@ public struct ITunesAppDTO: Decodable, Sendable {
     public let contentAdvisoryRating: String?
     public let trackContentRating: String?
 
-    // 크기 / 최소 OS  (fileSizeBytes 는 실응답에서 문자열로 옴)
+    // 크기 / 최소 OS (fileSizeBytes 는 실응답에서 문자열로 옴)
     public let fileSizeBytes: String?
     public let minimumOsVersion: String?
 
@@ -68,13 +71,13 @@ public struct ITunesAppDTO: Decodable, Sendable {
     public let languageCodesISO2A: [String]?
 }
 
-/// RSS 차트 항목 DTO. 필드가 적다(스크린샷/설명/평점 없음 — docs/04).
+/// RSS 차트 항목 DTO. 필드가 적다(스크린샷/설명/평점 없음).
 public struct RSSEntryDTO: Decodable, Sendable {
     public let id: String
     public let name: String
     public let artistName: String
     public let artworkUrl100: String
-    /// 실응답에서 비어 있는 경우가 흔하다(top-free 관측). 기본 빈 배열.
+    /// 실응답에서 비어 있는 경우가 흔해(top-free 관측) 누락 시 빈 배열로 디코딩한다.
     public let genres: [RSSGenreDTO]
     public let url: String?
 
@@ -93,7 +96,7 @@ public struct RSSEntryDTO: Decodable, Sendable {
     }
 }
 
-/// RSS 장르 객체. docs/04 는 `name` 만 명시하나 실응답은 `genreId`/`url` 도 포함.
+/// RSS 장르 객체.
 public struct RSSGenreDTO: Decodable, Sendable {
     public let name: String
     public let genreId: String?

@@ -1,12 +1,17 @@
+//
+//  DefaultSearchBuilder.swift
+//  Search
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import SearchInterface
 import AppDetailInterface
 import ITunesKit
 import Persistence
 
-/// Search 구현 Builder. Core 인프라 + AppDetail 계약을 생성자 주입받아 조립한다.
-///
-/// 조립 지점: Repository/UseCase/ViewModel 를 여기서만 생성(docs/02 "조립은 Builder").
+/// Search 구현 Builder. Core 인프라 + AppDetail 계약을 주입받아 조립한다.
 public struct DefaultSearchBuilder: SearchBuilder {
     private let iTunesClient: ITunesClient
     private let recentSearchStore: RecentSearchStore

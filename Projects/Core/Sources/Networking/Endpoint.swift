@@ -1,3 +1,10 @@
+//
+//  Endpoint.swift
+//  Networking
+//
+//  Created by groot on 7/29/26.
+//
+
 import Foundation
 
 /// HTTP 메서드(현재 GET 만 사용 — iTunes 는 조회 전용).
@@ -5,9 +12,7 @@ public enum HTTPMethod: String, Sendable {
     case get = "GET"
 }
 
-/// 범용 요청 서술자. iTunes 를 모른다 — 스킴/호스트/경로/쿼리만 안다.
-///
-/// `URLRequest` 로 변환하는 책임은 이 타입이 갖는다(요청 빌더).
+/// 범용 요청 서술자(요청 빌더). 스킴/호스트/경로/쿼리만 안다.
 public struct Endpoint: Sendable, Equatable {
     public let scheme: String
     public let host: String

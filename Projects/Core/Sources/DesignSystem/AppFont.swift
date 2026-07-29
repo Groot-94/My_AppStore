@@ -1,3 +1,10 @@
+//
+//  AppFont.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 
 /// 공통 타이포. Dynamic Type 대응 preferred font 기반.

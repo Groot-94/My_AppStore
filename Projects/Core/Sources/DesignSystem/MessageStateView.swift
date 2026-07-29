@@ -1,8 +1,13 @@
+//
+//  MessageStateView.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 
 /// 빈 결과/실패 등 전체 화면 안내 상태 뷰(제목 + 부제 + 선택적 액션 버튼).
-///
-/// 엔티티 비의존 — 원시 문자열/콜백으로 구성. Search 의 empty/failed 에 공용.
 public final class MessageStateView: UIView {
     private let titleLabel = UILabel()
     private let messageLabel = UILabel()

@@ -1,3 +1,10 @@
+//
+//  SectionHeaderView.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 
 /// 섹션 헤더(제목 + 선택적 "모두 보기"). 엔티티 비의존 — 원시 값 입력.

@@ -1,3 +1,10 @@
+//
+//  RatingView.swift
+//  DesignSystem
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 
 /// 평점 표시 뷰(별 아이콘 + 수치/리뷰 수). 엔티티 비의존 — 원시 값 입력.

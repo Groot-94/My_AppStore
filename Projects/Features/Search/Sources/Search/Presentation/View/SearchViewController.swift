@@ -1,11 +1,17 @@
+//
+//  SearchViewController.swift
+//  Search
+//
+//  Created by groot on 7/29/26.
+//
+
 import UIKit
 import DesignSystem
 import Persistence
 
 /// 검색 화면(UIKit). `UISearchController` + 결과/최근검색어 테이블.
 ///
-/// 상태는 `SearchViewModel` 를 `ObservationSubscription` 으로 관찰해 렌더한다.
-/// 항목 선택 시 주입받은 `onSelectApp(appID)` 로 AppDetail push 를 트리거한다.
+/// `SearchViewModel` 상태를 `ObservationSubscription` 으로 관찰해 렌더한다.
 final class SearchViewController: UIViewController {
     private enum Section { case recents, results }
 
@@ -172,7 +178,7 @@ extension SearchViewController: UISearchBarDelegate {
     }
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        // 검색어를 전부 지우면 idle(최근 검색어)로 복귀(자동완성은 범위 밖 — docs/05).
+        // 검색어를 전부 지우면 idle(최근 검색어)로 복귀.
         if searchText.isEmpty {
             viewModel.cancelSearch()
         }
@@ -216,7 +222,7 @@ extension SearchViewController: UITableViewDataSource, UITableViewDelegate {
             guard let rowCell = cell as? AppRowCell else { return cell }
             let item = displayedResults[indexPath.row]
             rowCell.configure(with: model(for: item), loader: imageLoader)
-            // 받기 버튼: UI 변화만(다운로드 없음 — docs/05).
+            // 받기 버튼: UI 변화만(다운로드 없음).
             rowCell.onGetTapped = { [weak rowCell] in
                 rowCell?.configure(with: Self.gotModel(from: item), loader: nil)
             }
