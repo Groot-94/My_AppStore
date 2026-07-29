@@ -1,0 +1,48 @@
+//
+//  DefaultGamesRepository.swift
+//  Games
+//
+//  Created by groot on 7/29/26.
+//
+
+import Foundation
+import ITunesKit
+
+/// `GamesRepository` 기본 구현. RSS 차트를 게임 필터해 매핑하고, 추천은 Lookup 배치로 보강한다.
+public struct DefaultGamesRepository: GamesRepository {
+    private let client: ITunesClient
+    private let bundle: Bundle
+
+    public init(client: ITunesClient, bundle: Bundle? = nil) {
+        self.client = client
+        self.bundle = bundle ?? .module
+    }
+
+    public func chart(feed: GamesChartFeed, limit: Int) async throws -> [ChartItem] {
+        let entries = try await client.chart(feed.asChartFeed, limit: limit)
+        return GamesMapper.gameChartItems(entries)
+    }
+
+    public func featured(curation: [FeaturedCuration]) async throws -> [FeaturedApp] {
+        guard !curation.isEmpty else { return [] }
+        let dtos = try await client.lookup(ids: curation.map(\.id))
+        return GamesMapper.featured(dtos, curation: curation)
+    }
+
+    public func curation() -> [FeaturedCuration] {
+        GamesCuration.featured(bundle: bundle)
+    }
+
+    public func categories() -> [Category] {
+        GamesCuration.categories
+    }
+}
+
+extension GamesChartFeed {
+    var asChartFeed: ChartFeed {
+        switch self {
+        case .topFree: return .topFree
+        case .topPaid: return .topPaid
+        }
+    }
+}

@@ -1,0 +1,6 @@
+{"feed":{"title":"무료 앱 순위","results":[
+{"artistName":"Supercell","id":"1229016807","name":"브롤스타즈","releaseDate":"2018-12-12","kind":"apps","artworkUrl100":"https://example.com/brawl/100x100bb.png","genres":[{"genreId":"6014","name":"게임","url":"https://itunes.apple.com/kr/genre/id6014"},{"genreId":"7015","name":"액션","url":"https://itunes.apple.com/kr/genre/id7015"}],"url":"https://apps.apple.com/kr/app/id1229016807"},
+{"artistName":"NAVER Corp.","id":"6738063154","name":"네이버플러스 스토어","releaseDate":"2025-03-18","kind":"apps","artworkUrl100":"https://example.com/naver/100x100bb.png","genres":[{"genreId":"6024","name":"쇼핑","url":"https://itunes.apple.com/kr/genre/id6024"}],"url":"https://apps.apple.com/kr/app/id6738063154"},
+{"artistName":"Roblox Corporation","id":"431946152","name":"Roblox","releaseDate":"2011-05-26","kind":"apps","artworkUrl100":"https://example.com/roblox/100x100bb.png","genres":[{"genreId":"6014","name":"Games","url":"https://itunes.apple.com/kr/genre/id6014"}],"url":"https://apps.apple.com/kr/app/id431946152"},
+{"artistName":"No Genre Co.","id":"999999999","name":"장르없는앱","releaseDate":"2024-01-01","kind":"apps","artworkUrl100":"https://example.com/none/100x100bb.png","genres":[],"url":"https://apps.apple.com/kr/app/id999999999"}
+]}}

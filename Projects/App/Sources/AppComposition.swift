@@ -62,11 +62,25 @@ struct AppComposition {
             cache: cache,
             imageLoader: imageLoader
         )
-        let seeAllBuilder: SeeAllBuilder = DefaultSeeAllBuilder(appDetail: appDetailBuilder)
+        let seeAllBuilder: SeeAllBuilder = DefaultSeeAllBuilder(
+            iTunesClient: iTunesClient,
+            imageLoader: imageLoader,
+            appDetail: appDetailBuilder
+        )
 
         let todayBuilder = DefaultTodayBuilder(appDetail: appDetailBuilder)
-        let gamesBuilder = DefaultGamesBuilder(appDetail: appDetailBuilder, seeAll: seeAllBuilder)
-        let appsBuilder = DefaultAppsBuilder(appDetail: appDetailBuilder, seeAll: seeAllBuilder)
+        let gamesBuilder = DefaultGamesBuilder(
+            iTunesClient: iTunesClient,
+            imageLoader: imageLoader,
+            appDetail: appDetailBuilder,
+            seeAll: seeAllBuilder
+        )
+        let appsBuilder = DefaultAppsBuilder(
+            iTunesClient: iTunesClient,
+            imageLoader: imageLoader,
+            appDetail: appDetailBuilder,
+            seeAll: seeAllBuilder
+        )
         let arcadeBuilder = DefaultArcadeBuilder(appDetail: appDetailBuilder)
         let searchBuilder = DefaultSearchBuilder(
             iTunesClient: iTunesClient,

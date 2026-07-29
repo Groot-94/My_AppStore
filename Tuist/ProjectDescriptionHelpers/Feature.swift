@@ -28,6 +28,7 @@ public extension Project {
     ///   - name: 피처 이름(PascalCase). 예: `Search`.
     ///   - interfaceDependencies: `XxxInterface` 가 소유 타입 계약을 위해 필요로 하는 추가 의존(기본 CoreKit + UIKit link).
     ///   - implDependencies: `Xxx`(Impl) 의 추가 의존. 자기 Interface + ITunesKit + DesignSystem 은 자동 주입.
+    ///   - implHasResources: Impl 정적 리소스(`Sources/Xxx/Resources/**`) 포함 여부.
     ///   - tests: `true` 면 `XxxTests` 유닛 테스트 타깃 생성(Impl 을 `@testable import`).
     ///   - testDependencies: 테스트 타깃의 추가 의존(피검증 Core 모듈 등). Impl 은 자동 주입.
     ///   - testHasResources: 테스트 픽스처(`Tests/XxxTests/Fixtures/**`) 포함 여부.
@@ -35,6 +36,7 @@ public extension Project {
         name: String,
         interfaceDependencies: [TargetDependency] = [],
         implDependencies: [TargetDependency] = [],
+        implHasResources: Bool = false,
         tests: Bool = false,
         testDependencies: [TargetDependency] = [],
         testHasResources: Bool = false
@@ -52,7 +54,8 @@ public extension Project {
                 .target(name: "\(name)Interface"),
                 .iTunesKit,
                 .designSystem,
-            ] + implDependencies
+            ] + implDependencies,
+            hasResources: implHasResources
         )
 
         var targets: [Target] = [interfaceTarget, implTarget]

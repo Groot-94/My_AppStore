@@ -37,7 +37,8 @@ public extension Target {
     /// 있어도 서로의 소스를 삼키지 않도록.
     static func framework(
         name: String,
-        dependencies: [TargetDependency] = []
+        dependencies: [TargetDependency] = [],
+        hasResources: Bool = false
     ) -> Target {
         .target(
             name: name,
@@ -46,6 +47,7 @@ public extension Target {
             bundleId: "\(Constants.bundleIDPrefix).\(name.lowercased())",
             deploymentTargets: Constants.deploymentTarget,
             sources: ["Sources/\(name)/**"],
+            resources: hasResources ? ["Sources/\(name)/Resources/**"] : [],
             dependencies: dependencies,
             settings: .appStoreBase
         )
