@@ -14,7 +14,6 @@ let project = Project.feature(
     implDependencies: [
         .featureInterface("AppDetail"),
         .featureInterface("SeeAll"),
-        .persistence,
     ],
     implHasResources: true,
     tests: true,

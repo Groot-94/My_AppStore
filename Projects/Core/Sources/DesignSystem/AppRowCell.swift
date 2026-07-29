@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Persistence
+import CoreKit
 
 /// 목록 행 셀(아이콘·이름·부제·평점·받기). Search 결과/차트 행 공용.
 public final class AppRowCell: UITableViewCell {

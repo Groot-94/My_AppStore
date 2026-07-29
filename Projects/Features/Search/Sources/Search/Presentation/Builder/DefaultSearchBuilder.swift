@@ -9,6 +9,7 @@ import UIKit
 import SearchInterface
 import AppDetailInterface
 import ITunesKit
+import CoreKit
 import Persistence
 
 /// Search 구현 Builder. Core 인프라 + AppDetail 계약을 주입받아 조립한다.

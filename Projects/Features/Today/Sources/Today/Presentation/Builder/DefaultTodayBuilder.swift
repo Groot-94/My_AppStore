@@ -9,7 +9,7 @@ import UIKit
 import TodayInterface
 import AppDetailInterface
 import ITunesKit
-import Persistence
+import CoreKit
 
 /// Today 구현 Builder. Core 인프라 + AppDetail 계약을 주입받아 조립한다.
 public struct DefaultTodayBuilder: TodayBuilder {

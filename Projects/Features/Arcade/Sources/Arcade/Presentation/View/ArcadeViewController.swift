@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 
 /// Arcade 탭 화면(UIKit). 히어로 배너(정적) + 캐러셀 2섹션 + 구독 안내 배너(UI만).
 final class ArcadeViewController: UIViewController {

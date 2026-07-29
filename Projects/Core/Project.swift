@@ -29,10 +29,7 @@ let project = Project.project(
         ),
         .framework(
             name: "DesignSystem",
-            dependencies: [
-                .target(name: "CoreKit"),
-                .target(name: "Persistence"),
-            ]
+            dependencies: [.target(name: "CoreKit")]
         ),
         // MARK: 테스트 타깃
         .unitTest(

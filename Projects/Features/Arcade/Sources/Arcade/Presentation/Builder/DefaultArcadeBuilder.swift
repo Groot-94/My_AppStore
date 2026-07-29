@@ -9,7 +9,7 @@ import UIKit
 import ArcadeInterface
 import AppDetailInterface
 import ITunesKit
-import Persistence
+import CoreKit
 
 /// Arcade 구현 Builder. Core 인프라 + AppDetail 계약을 주입받아 조립한다.
 public struct DefaultArcadeBuilder: ArcadeBuilder {

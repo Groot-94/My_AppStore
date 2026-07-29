@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 
 /// 검색 화면(UIKit). `UISearchController` + 결과/최근검색어 테이블.
 ///

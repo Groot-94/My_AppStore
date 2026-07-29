@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Persistence
+import CoreKit
 
 /// 차트 순위 행(순번 + 아이콘 + 이름/장르). SeeAll·차트 목록 공용.
 public final class ChartRankRow: UICollectionViewCell {

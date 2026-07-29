@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 
 /// 카드 내부 앱 행(아이콘 · 이름/장르 · 받기 버튼). 카드 배경에 따라 텍스트 대비를 바꾼다.
 final class TodayAppRowView: UIView {

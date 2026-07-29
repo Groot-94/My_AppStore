@@ -10,7 +10,7 @@ import AppsInterface
 import AppDetailInterface
 import SeeAllInterface
 import ITunesKit
-import Persistence
+import CoreKit
 
 /// Apps 구현 Builder. Core 인프라 + AppDetail/SeeAll 계약을 주입받아 조립한다.
 public struct DefaultAppsBuilder: AppsBuilder {

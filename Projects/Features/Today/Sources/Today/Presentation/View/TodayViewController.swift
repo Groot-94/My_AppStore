@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 
 /// Today 탭 화면(UIKit). 날짜 헤더 + 카드 세로 스크롤. Pull-to-refresh 지원.
 final class TodayViewController: UIViewController {

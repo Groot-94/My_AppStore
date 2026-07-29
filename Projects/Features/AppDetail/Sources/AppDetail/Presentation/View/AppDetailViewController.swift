@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 
 /// 앱 상세 화면(UIKit). 세로 스크롤 컨테이너에 섹션을 조립한다.
 ///

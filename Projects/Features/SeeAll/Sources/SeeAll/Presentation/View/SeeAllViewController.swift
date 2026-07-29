@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 
 /// 차트 전체 목록 화면(UIKit). `ChartRankRow` 목록 + 로딩/실패/빈 상태 오버레이.
 final class SeeAllViewController: UIViewController {

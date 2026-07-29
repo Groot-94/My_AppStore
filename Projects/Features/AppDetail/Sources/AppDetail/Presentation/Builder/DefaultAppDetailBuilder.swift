@@ -8,6 +8,7 @@
 import UIKit
 import AppDetailInterface
 import ITunesKit
+import CoreKit
 import Persistence
 
 /// AppDetail 구현 Builder. Core 인프라(ITunesClient/Cache/ImageLoading)를 주입받아 조립한다.

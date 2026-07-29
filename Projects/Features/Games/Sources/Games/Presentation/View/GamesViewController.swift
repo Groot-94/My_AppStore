@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 import SeeAllInterface
 
 /// Games 탭 화면(UIKit). Apps 와 동형 — 세로 스크롤에 추천/게임 차트/하위 카테고리 섹션 조립.

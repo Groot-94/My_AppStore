@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 import SeeAllInterface
 
 /// Apps 탭 화면(UIKit). 세로 스크롤 컨테이너에 추천/차트/카테고리 섹션을 조립한다.

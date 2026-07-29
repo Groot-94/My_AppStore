@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 
 /// 대형 피처 카드(피처 소유 뷰). 커버는 그라데이션 + 대표 앱 아이콘으로 구성.
 final class TodayLargeCardView: UIView {

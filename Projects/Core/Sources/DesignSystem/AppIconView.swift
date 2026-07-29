@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Persistence
+import CoreKit
 
 /// 앱 아이콘 뷰. `ImageLoading` 을 주입받아 URL 이미지를 비동기 로드한다.
 public final class AppIconView: UIImageView {

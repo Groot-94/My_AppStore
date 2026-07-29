@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Persistence
+import CoreKit
 
 /// 추천 앱 가로 캐러셀(Apps/Games 히어로). 엔티티 비의존 — 자체 `Item` 배열 입력.
 public final class CarouselView: UIView {

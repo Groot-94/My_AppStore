@@ -5,13 +5,8 @@
 //  Created by groot on 7/29/26.
 //
 
+import CoreKit
 import Foundation
-
-/// 이미지 로딩 추상화(DesignSystem 이 주입받아 사용).
-public protocol ImageLoading: Sendable {
-    /// URL 이미지 원본 데이터를 로드한다(캐시 우선).
-    func loadImageData(from url: URL) async throws -> Data
-}
 
 /// URLSession + Cache 기반 이미지 로더. 캐시 hit 이면 네트워크를 건너뛴다.
 public struct DefaultImageLoader: ImageLoading {

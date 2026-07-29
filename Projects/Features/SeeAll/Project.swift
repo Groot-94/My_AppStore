@@ -11,10 +11,7 @@ import ProjectDescriptionHelpers
 // SeeAll: Impl → AppDetailInterface + Persistence(이미지 로더).
 let project = Project.feature(
     name: "SeeAll",
-    implDependencies: [
-        .featureInterface("AppDetail"),
-        .persistence,
-    ],
+    implDependencies: [.featureInterface("AppDetail")],
     tests: true,
     testDependencies: [
         .iTunesKit,

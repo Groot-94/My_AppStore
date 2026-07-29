@@ -7,7 +7,7 @@
 
 import UIKit
 import DesignSystem
-import Persistence
+import CoreKit
 
 /// 리스트형 카드(피처 소유 뷰). 헤더 카피 + 참조 앱 행 여러 개.
 final class TodayListCardView: UIView {

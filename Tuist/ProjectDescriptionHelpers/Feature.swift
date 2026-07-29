@@ -60,9 +60,10 @@ public extension Project {
 
         let implTarget = Target.framework(
             name: name,
-            // 모든 Impl: 자기 Interface + ITunesKit + DesignSystem + 추가 의존.
+            // 모든 Impl: 자기 Interface + CoreKit + ITunesKit + DesignSystem + 추가 의존.
             dependencies: [
                 .target(name: "\(name)Interface"),
+                .coreKit,
                 .iTunesKit,
                 .designSystem,
             ] + implDependencies,

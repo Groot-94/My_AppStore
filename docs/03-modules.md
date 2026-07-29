@@ -11,7 +11,7 @@ Tuist 워크스페이스의 타깃 구성. **Core 5 + Feature(피처당 2~4타�
 | Networking | framework | CoreKit | ✕ |
 | Persistence | framework | CoreKit | ✕ |
 | ITunesKit | framework | CoreKit, Networking | ✕ |
-| DesignSystem | framework | CoreKit, Persistence | ○ |
+| DesignSystem | framework | CoreKit | ○ |
 
 > **공용 Domain/Data 모듈은 없다(확정).** 엔티티·UseCase·Repository는 각 피처가 소유하고(→ [02-architecture](02-architecture.md)),
 > 전 피처가 동일하게 반복하는 iTunes 응답 **디코딩(DTO)과 API 호출만 `ITunesKit`으로 공용화**한다.
@@ -24,11 +24,11 @@ Tuist 워크스페이스의 타깃 구성. **Core 5 + Feature(피처당 2~4타�
 | 타깃 | 타입 | 의존 | UIKit |
 |------|------|------|:---:|
 | `XxxInterface` | framework | CoreKit(+ 반환 타입 위해 UIKit) | ○(최소) |
-| `Xxx` (Impl) | framework | `XxxInterface`, ITunesKit, DesignSystem, (필요 시) Persistence, **의존하는 타 피처의 `*Interface`** | ○ |
+| `Xxx` (Impl) | framework | `XxxInterface`, CoreKit, ITunesKit, DesignSystem, (필요 시) Persistence, **의존하는 타 피처의 `*Interface`** | ○ |
 | `XxxTesting` | framework | `XxxInterface` | ✕ |
 | `XxxExample` | app | `Xxx`, `XxxTesting`, DesignSystem | ○ |
 
-- **모든 피처 Impl은 Persistence에 의존한다** — 이미지 로딩(`ImageLoading` 프로토콜, Persistence 소유)을 Builder가 주입받기 때문. 추가로 **Search**는 `RecentSearchStore`, **AppDetail**은 Lookup 응답 캐시를 사용.
+- Persistence를 직접 쓰는 피처: **Search**(`RecentSearchStore`), **AppDetail**(Lookup 응답 캐시)뿐. 이미지 로딩은 CoreKit의 `ImageLoading` 계약으로 주입받으므로 나머지 피처는 Persistence를 모른다.
 - 피처는 Networking을 직접 의존하지 않는다 — HTTP 호출은 전부 `ITunesKit.ITunesClient`를 경유.
 
 **피처 간 의존(구현 → 타 피처 Interface)만 허용**:
@@ -58,7 +58,7 @@ App(Composition Root)은 유일하게 모든 구현을 안다 — 구현체 생�
 
 ### CoreKit
 - **책임**: UI/네트워크 비의존 최소 공통 코드.
-- **포함**: DI 컨테이너(`DIResolver`/`DIContainer`), 공통 에러 타입, `StoreConfig(country:lang:)`, Foundation 확장, 로거.
+- **포함**: DI 컨테이너(`DIResolver`/`DIContainer`), 공통 에러 타입, `StoreConfig(country:lang:)`, `ImageLoading` 계약(구현은 Persistence — UI가 데이터 모듈을 모르게 하는 의존 역전), Foundation 확장, 로거.
 - **주의**: `AppStoreRouter` 같은 UIKit 노출 프로토콜을 두지 않는다(UI 비의존 유지).
 
 ### Networking
@@ -67,7 +67,7 @@ App(Composition Root)은 유일하게 모든 구현을 안다 — 구현체 생�
 
 ### Persistence
 - **책임**: 로컬 저장/캐시 추상화.
-- **공개 API**: `Cache`(이미지/응답 메모리+디스크), `RecentSearchStore`(UserDefaults), `ImageLoading`.
+- **공개 API**: `Cache`(이미지/응답 메모리+디스크), `RecentSearchStore`(UserDefaults), `DefaultImageLoader`(CoreKit `ImageLoading` 구현).
 
 ### ITunesKit
 - **책임**: iTunes API 3종(Search/Lookup/RSS)의 **공용 DTO + 호출 클라이언트**. 엔티티·매핑은 소유하지 않는다.
@@ -81,7 +81,7 @@ App(Composition Root)은 유일하게 모든 구현을 안다 — 구현체 생�
   그리고 **스토어 피드 컴포넌트**(`CarouselView`, `ChartRankRow`, `SectionHeaderView`, `CategoryGridView`) — Apps/Games가 레이아웃을 재사용.
 - **엔티티 비의존(확정)**: 컴포넌트 입력은 원시 값/자체 구성 모델(`AppRowCell.Model(iconURL:title:subtitle:)` 등).
   피처가 "자기 엔티티 → 구성 모델" 변환을 담당한다.
-- 이미지 로딩은 `Persistence.ImageLoading`을 주입받아 사용.
+- 이미지 로딩은 CoreKit의 `ImageLoading` 계약을 주입받아 사용 — DesignSystem은 Persistence를 모른다.
 
 ## Feature 모듈 (공통 형태)
 

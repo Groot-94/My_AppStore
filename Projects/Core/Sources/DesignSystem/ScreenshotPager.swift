@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Persistence
+import CoreKit
 
 /// 스크린샷 가로 페이저(AppDetail 헤더용). 엔티티 비의존 — URL 배열 입력.
 public final class ScreenshotPager: UIView {
