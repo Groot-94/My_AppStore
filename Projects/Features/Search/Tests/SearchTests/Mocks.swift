@@ -84,8 +84,7 @@ final class MockSearchRepository: SearchRepository, @unchecked Sendable {
 }
 
 /// 호출을 기록하는 `RecentSearching` 목.
-final class MockRecentSearches: RecentSearching, @unchecked Sendable {
-    private let lock = NSLock()
+actor MockRecentSearches: RecentSearching {
     private var _terms: [String]
     private(set) var addedTerms: [String] = []
     private(set) var clearCallCount = 0
@@ -94,23 +93,17 @@ final class MockRecentSearches: RecentSearching, @unchecked Sendable {
         self._terms = terms
     }
 
-    func recentTerms() -> [String] {
-        lock.withLock { _terms }
-    }
+    func recentTerms() -> [String] { _terms }
 
     func add(term: String) {
-        lock.withLock {
-            addedTerms.append(term)
-            _terms.removeAll { $0 == term }
-            _terms.insert(term, at: 0)
-        }
+        addedTerms.append(term)
+        _terms.removeAll { $0 == term }
+        _terms.insert(term, at: 0)
     }
 
     func clear() {
-        lock.withLock {
-            clearCallCount += 1
-            _terms.removeAll()
-        }
+        clearCallCount += 1
+        _terms.removeAll()
     }
 }
 

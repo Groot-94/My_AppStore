@@ -16,9 +16,9 @@ public protocol SearchAppsUseCase: Sendable {
     /// - Throws: 빈/공백 검색어면 `CoreError.invalidInput`. 그 외 Repository 에러 전파.
     func execute(term: String) async throws -> [SearchResultItem]
     /// 최신순 최근 검색어.
-    func recentTerms() -> [String]
+    func recentTerms() async -> [String]
     /// 최근 검색어 전체 비움.
-    func clearRecents()
+    func clearRecents() async
 }
 
 /// 기본 구현. 트림/빈값 검증 후 Repository 호출, 저장은 `RecentSearching` 에 위임.
@@ -38,10 +38,10 @@ public struct DefaultSearchAppsUseCase: SearchAppsUseCase {
         guard !trimmed.isEmpty else { throw CoreError.invalidInput }
 
         // 결과 유무와 무관하게 검색 시점에 최근 검색어로 저장한다.
-        recentSearches.add(term: trimmed)
+        await recentSearches.add(term: trimmed)
         return try await repository.search(term: trimmed, limit: resultLimit)
     }
 
-    public func recentTerms() -> [String] { recentSearches.recentTerms() }
-    public func clearRecents() { recentSearches.clear() }
+    public func recentTerms() async -> [String] { await recentSearches.recentTerms() }
+    public func clearRecents() async { await recentSearches.clear() }
 }

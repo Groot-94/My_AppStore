@@ -36,14 +36,20 @@ public final class SearchViewModel {
 
     public init(useCase: SearchAppsUseCase) {
         self.useCase = useCase
-        self.state = .idle(useCase.recentTerms())
+        self.state = .idle([])
+    }
+
+    /// 화면 진입 시 최근 검색어를 비동기로 불러와 idle 을 갱신한다(init 은 동기라 여기서 로드).
+    public func start() async {
+        guard case .idle = state else { return }
+        await refreshIdle()
     }
 
     /// 검색 실행(Return/검색 버튼). 빈/공백은 무시하고 idle 유지.
     public func search(term: String) async {
         let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            refreshIdle()
+            await refreshIdle()
             return
         }
 
@@ -88,27 +94,27 @@ public final class SearchViewModel {
     /// 직전 term 으로 재시도(failed 상태의 [다시 시도]).
     public func retry() async {
         guard let lastTerm else {
-            refreshIdle()
+            await refreshIdle()
             return
         }
         await search(term: lastTerm)
     }
 
     /// 최근 검색어 비우기 → idle([]).
-    public func clearRecents() {
-        useCase.clearRecents()
+    public func clearRecents() async {
         state = .idle([])
+        await useCase.clearRecents()
     }
 
     /// 취소/✕ → 입력·결과 초기화, idle 복귀(최근 검색어 재조회).
-    public func cancelSearch() {
+    public func cancelSearch() async {
         searchTask?.cancel()
         searchTask = nil
         lastTerm = nil
-        refreshIdle()
+        await refreshIdle()
     }
 
-    private func refreshIdle() {
-        state = .idle(useCase.recentTerms())
+    private func refreshIdle() async {
+        state = .idle(await useCase.recentTerms())
     }
 }

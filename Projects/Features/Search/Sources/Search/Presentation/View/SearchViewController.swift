@@ -50,6 +50,7 @@ final class SearchViewController: UIViewController {
         setupTableView()
         setupOverlays()
         bind()
+        Task { await viewModel.start() }
     }
 
     // MARK: - Setup
@@ -174,13 +175,13 @@ extension SearchViewController: UISearchBarDelegate {
     }
 
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        viewModel.cancelSearch()
+        Task { await viewModel.cancelSearch() }
     }
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         // 검색어를 전부 지우면 idle(최근 검색어)로 복귀.
         if searchText.isEmpty {
-            viewModel.cancelSearch()
+            Task { await viewModel.cancelSearch() }
         }
     }
 }
@@ -257,7 +258,7 @@ extension SearchViewController: UITableViewDataSource, UITableViewDelegate {
         clearButton.setTitle("지우기", for: .normal)
         clearButton.titleLabel?.font = AppFont.subheadline
         clearButton.setTitleColor(AppColors.accent, for: .normal)
-        clearButton.addAction(UIAction { [weak self] _ in self?.viewModel.clearRecents() }, for: .touchUpInside)
+        clearButton.addAction(UIAction { [weak self] _ in Task { await self?.viewModel.clearRecents() } }, for: .touchUpInside)
 
         let stack = UIStackView(arrangedSubviews: [title, UIView(), clearButton])
         stack.axis = .horizontal

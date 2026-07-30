@@ -7,22 +7,22 @@
 
 import Foundation
 
-/// 최근 검색어 저장소(Search 피처가 사용).
+/// 최근 검색어 저장소(Search 피처가 사용). 구현은 actor 로 직렬화한다.
 public protocol RecentSearchStore: Sendable {
     /// 최신순 최근 검색어(최대 `maxCount`).
-    func recentTerms() -> [String]
+    func recentTerms() async -> [String]
     /// 검색어 추가. 중복이면 최상단으로 갱신, 최대 개수 초과분은 제거.
-    func add(term: String)
+    func add(term: String) async
     /// 전체 비움.
-    func clear()
+    func clear() async
 }
 
-/// UserDefaults 기반 구현. 최대 10개·중복 시 최상단 갱신. 읽기-수정-쓰기를 `NSLock` 으로 보호.
-public final class DefaultRecentSearchStore: RecentSearchStore, @unchecked Sendable {
+/// UserDefaults 기반 구현. 최대 10개·중복 시 최상단 갱신.
+/// 읽기-수정-쓰기 원자성을 `actor` 격리로 보장한다(수동 락 불필요).
+public actor DefaultRecentSearchStore: RecentSearchStore {
     private let defaults: UserDefaults
     private let key: String
     private let maxCount: Int
-    private let lock = NSLock()
 
     /// - Parameters:
     ///   - defaults: 저장소(기본 `.standard`, 테스트는 전용 suite 주입).
@@ -39,17 +39,13 @@ public final class DefaultRecentSearchStore: RecentSearchStore, @unchecked Senda
     }
 
     public func recentTerms() -> [String] {
-        lock.lock()
-        defer { lock.unlock() }
-        return defaults.stringArray(forKey: key) ?? []
+        defaults.stringArray(forKey: key) ?? []
     }
 
     public func add(term: String) {
         let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
-        lock.lock()
-        defer { lock.unlock() }
         var terms = defaults.stringArray(forKey: key) ?? []
         // 중복 제거(원문 유지) 후 최상단 삽입.
         terms.removeAll { $0 == trimmed }
@@ -61,8 +57,6 @@ public final class DefaultRecentSearchStore: RecentSearchStore, @unchecked Senda
     }
 
     public func clear() {
-        lock.lock()
-        defer { lock.unlock() }
         defaults.removeObject(forKey: key)
     }
 }

@@ -24,9 +24,11 @@ struct SearchViewModelTests {
         return (viewModel, repo, recentStore)
     }
 
-    @Test("초기 상태는 idle(최근 검색어)")
-    func initialIdleWithRecents() {
+    @Test("start() 후 idle(최근 검색어) 로드")
+    func initialIdleWithRecents() async {
         let (viewModel, _, _) = makeViewModel(recents: ["a", "b"])
+        #expect(viewModel.state == .idle([]))   // init 은 동기라 비어 있음
+        await viewModel.start()
         #expect(viewModel.state == .idle(["a", "b"]))
     }
 
@@ -91,10 +93,10 @@ struct SearchViewModelTests {
     }
 
     @Test("clearRecents 는 저장소 비우고 idle([]) 로")
-    func clearRecents() {
+    func clearRecents() async {
         let (viewModel, _, recentStore) = makeViewModel(recents: ["a", "b"])
-        viewModel.clearRecents()
-        #expect(recentStore.clearCallCount == 1)
+        await viewModel.clearRecents()
+        #expect(await recentStore.clearCallCount == 1)
         #expect(viewModel.state == .idle([]))
     }
 
@@ -105,8 +107,8 @@ struct SearchViewModelTests {
         await viewModel.search(term: "kakao")
         #expect(viewModel.state == .loaded(items))
         // 검색으로 최근 검색어가 저장됐으므로 cancel 시 그 목록으로 idle.
-        viewModel.cancelSearch()
-        #expect(viewModel.state == .idle(recentStore.recentTerms()))
+        await viewModel.cancelSearch()
+        #expect(viewModel.state == .idle(await recentStore.recentTerms()))
     }
 
     @Test("retry 는 직전 term 으로 재검색")

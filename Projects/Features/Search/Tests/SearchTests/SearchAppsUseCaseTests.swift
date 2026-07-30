@@ -36,14 +36,14 @@ struct SearchAppsUseCaseTests {
             _ = try await useCase.execute(term: "   ")
         }
         #expect(repo.receivedTerms.isEmpty)
-        #expect(recents.addedTerms.isEmpty)
+        #expect(await recents.addedTerms.isEmpty)
     }
 
     @Test("검색 시 최근 검색어 저장 위임(트림된 값)")
     func savesRecentTerm() async throws {
         let (useCase, _, recents) = makeUseCase(outcome: .success([TestSupport.item(id: 1)]))
         _ = try await useCase.execute(term: "  지도 ")
-        #expect(recents.addedTerms == ["지도"])
+        #expect(await recents.addedTerms == ["지도"])
     }
 
     @Test("Repository 결과를 그대로 반환")
@@ -60,6 +60,6 @@ struct SearchAppsUseCaseTests {
         await #expect(throws: MockError.self) {
             _ = try await useCase.execute(term: "kakao")
         }
-        #expect(recents.addedTerms == ["kakao"])
+        #expect(await recents.addedTerms == ["kakao"])
     }
 }

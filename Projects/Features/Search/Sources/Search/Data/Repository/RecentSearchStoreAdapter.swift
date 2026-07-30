@@ -16,7 +16,7 @@ public struct RecentSearchStoreAdapter: RecentSearching {
         self.store = store
     }
 
-    public func recentTerms() -> [String] { store.recentTerms() }
-    public func add(term: String) { store.add(term: term) }
-    public func clear() { store.clear() }
+    public func recentTerms() async -> [String] { await store.recentTerms() }
+    public func add(term: String) async { await store.add(term: term) }
+    public func clear() async { await store.clear() }
 }
