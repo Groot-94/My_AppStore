@@ -11,7 +11,7 @@ import ITunesKit
 @testable import Today
 
 /// 큐레이션/요약 결과를 주입할 수 있는 `TodayRepository` 목.
-final class MockTodayRepository: TodayRepository, @unchecked Sendable {
+actor MockTodayRepository: TodayRepository {
     enum Outcome: Sendable {
         case success([TodayAppSummary])
         case failure
@@ -20,7 +20,6 @@ final class MockTodayRepository: TodayRepository, @unchecked Sendable {
     private let staticCuration: [TodayStoryCuration]
     private var outcomes: [Outcome]
     private(set) var requestedIDs: [Int] = []
-    private let lock = NSLock()
 
     /// 호출마다 앞에서부터 소비하는 결과 큐. 큐가 비면 마지막 결과를 반복한다.
     init(curation: [TodayStoryCuration], summaries: Outcome = .success([])) {
@@ -33,13 +32,11 @@ final class MockTodayRepository: TodayRepository, @unchecked Sendable {
         self.outcomes = summariesQueue
     }
 
-    func curation() -> [TodayStoryCuration] { staticCuration }
+    nonisolated func curation() -> [TodayStoryCuration] { staticCuration }
 
     func summaries(ids: [Int]) async throws -> [TodayAppSummary] {
-        let outcome: Outcome = lock.withLock {
-            requestedIDs.append(contentsOf: ids)
-            return outcomes.count > 1 ? outcomes.removeFirst() : (outcomes.first ?? .success([]))
-        }
+        requestedIDs.append(contentsOf: ids)
+        let outcome: Outcome = outcomes.count > 1 ? outcomes.removeFirst() : (outcomes.first ?? .success([]))
         switch outcome {
         case let .success(all):
             return all.filter { ids.contains($0.id) }
@@ -50,10 +47,9 @@ final class MockTodayRepository: TodayRepository, @unchecked Sendable {
 }
 
 /// lookup 응답을 주입하는 `ITunesClient` 목.
-final class MockITunesClient: ITunesClient, @unchecked Sendable {
+actor MockITunesClient: ITunesClient {
     private let lookupResult: [ITunesAppDTO]
     private(set) var lookupIDs: [Int] = []
-    private let lock = NSLock()
 
     init(lookupResult: [ITunesAppDTO] = []) {
         self.lookupResult = lookupResult
@@ -62,7 +58,7 @@ final class MockITunesClient: ITunesClient, @unchecked Sendable {
     func search(term: String, genreID: Int?, limit: Int) async throws -> [ITunesAppDTO] { [] }
 
     func lookup(ids: [Int]) async throws -> [ITunesAppDTO] {
-        lock.withLock { lookupIDs.append(contentsOf: ids) }
+        lookupIDs.append(contentsOf: ids)
         return lookupResult
     }
 

@@ -21,7 +21,7 @@ struct LoadAppDetailUseCaseTests {
 
         let result = try await useCase.execute(appID: 42)
         #expect(result == expected)
-        #expect(repo.receivedIDs == [42])
+        #expect(await repo.receivedIDs == [42])
     }
 
     @Test("Repository notFound 전파")

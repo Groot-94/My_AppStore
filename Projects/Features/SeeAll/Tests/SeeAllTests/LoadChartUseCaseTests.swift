@@ -22,8 +22,8 @@ struct LoadChartUseCaseTests {
 
         let result = try await useCase.execute(input: input)
         #expect(result == expected)
-        #expect(repo.receivedFeed == .topPaid)
-        #expect(repo.receivedLimit == 50)
+        #expect(await repo.receivedFeed == .topPaid)
+        #expect(await repo.receivedLimit == 50)
     }
 
     @Test("genreID 6014 이면 게임 필터·rank 재부여 후 반환")
@@ -40,7 +40,7 @@ struct LoadChartUseCaseTests {
         let result = try await useCase.execute(input: input)
         #expect(result.map(\.id) == [1, 3])
         #expect(result.map(\.rank) == [1, 2])
-        #expect(repo.receivedFeed == .topFree)
+        #expect(await repo.receivedFeed == .topFree)
     }
 
     @Test("Repository 실패 전파")

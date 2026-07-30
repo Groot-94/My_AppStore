@@ -26,7 +26,7 @@ struct SearchAppsUseCaseTests {
     func trimsTermBeforeSearch() async throws {
         let (useCase, repo, _) = makeUseCase(outcome: .success([TestSupport.item(id: 1)]))
         _ = try await useCase.execute(term: "  kakao  ")
-        #expect(repo.receivedTerms == ["kakao"])
+        #expect(await repo.receivedTerms == ["kakao"])
     }
 
     @Test("빈/공백 검색어는 invalidInput 던지고 Repository 미호출")
@@ -35,7 +35,7 @@ struct SearchAppsUseCaseTests {
         await #expect(throws: CoreError.self) {
             _ = try await useCase.execute(term: "   ")
         }
-        #expect(repo.receivedTerms.isEmpty)
+        #expect(await repo.receivedTerms.isEmpty)
         #expect(await recents.addedTerms.isEmpty)
     }
 

@@ -21,8 +21,8 @@ struct DefaultChartRepositoryTests {
 
         _ = try await repository.chart(feed: .topPaid, limit: 42)
 
-        #expect(client.receivedFeed == .topPaid)
-        #expect(client.receivedLimit == 42)
+        #expect(await client.receivedFeed == .topPaid)
+        #expect(await client.receivedLimit == 42)
     }
 
     @Test("DTO 를 SeeAllItem 으로 매핑해 반환")

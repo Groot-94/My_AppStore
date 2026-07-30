@@ -11,7 +11,7 @@ import ITunesKit
 @testable import Arcade
 
 /// 큐레이션/게임 결과를 주입할 수 있는 `ArcadeRepository` 목.
-final class MockArcadeRepository: ArcadeRepository, @unchecked Sendable {
+actor MockArcadeRepository: ArcadeRepository {
     enum Outcome: Sendable {
         case success([ArcadeGame])
         case failure
@@ -20,17 +20,16 @@ final class MockArcadeRepository: ArcadeRepository, @unchecked Sendable {
     private let staticCuration: ArcadeCuration?
     private let gamesOutcome: Outcome
     private(set) var requestedIDs: [Int] = []
-    private let lock = NSLock()
 
     init(curation: ArcadeCuration?, games: Outcome = .success([])) {
         self.staticCuration = curation
         self.gamesOutcome = games
     }
 
-    func curation() -> ArcadeCuration? { staticCuration }
+    nonisolated func curation() -> ArcadeCuration? { staticCuration }
 
     func games(ids: [Int]) async throws -> [ArcadeGame] {
-        lock.withLock { requestedIDs.append(contentsOf: ids) }
+        requestedIDs.append(contentsOf: ids)
         switch gamesOutcome {
         case let .success(all):
             return all.filter { ids.contains($0.id) }
@@ -41,10 +40,9 @@ final class MockArcadeRepository: ArcadeRepository, @unchecked Sendable {
 }
 
 /// lookup 응답을 주입하는 `ITunesClient` 목.
-final class MockITunesClient: ITunesClient, @unchecked Sendable {
+actor MockITunesClient: ITunesClient {
     private let lookupResult: [ITunesAppDTO]
     private(set) var lookupIDs: [Int] = []
-    private let lock = NSLock()
 
     init(lookupResult: [ITunesAppDTO] = []) {
         self.lookupResult = lookupResult
@@ -53,7 +51,7 @@ final class MockITunesClient: ITunesClient, @unchecked Sendable {
     func search(term: String, genreID: Int?, limit: Int) async throws -> [ITunesAppDTO] { [] }
 
     func lookup(ids: [Int]) async throws -> [ITunesAppDTO] {
-        lock.withLock { lookupIDs.append(contentsOf: ids) }
+        lookupIDs.append(contentsOf: ids)
         return lookupResult
     }
 

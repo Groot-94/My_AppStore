@@ -40,7 +40,7 @@ struct AppDetailViewModelTests {
         let viewModel = AppDetailViewModel(appID: 42, useCase: useCase, now: now)
         await viewModel.load()
         #expect(viewModel.state == .loaded(AppDetailPresentation(detail: detail, now: now)))
-        #expect(repo.receivedIDs == [42])
+        #expect(await repo.receivedIDs == [42])
     }
 
     @Test("0건(notFound) 이면 재시도 불가 failed")
@@ -71,7 +71,7 @@ struct AppDetailViewModelTests {
         let (viewModel, repo) = makeViewModel(outcome: .failure)
         await viewModel.load()
         await viewModel.load()
-        #expect(repo.receivedIDs == [42, 42])
+        #expect(await repo.receivedIDs == [42, 42])
     }
 
     @Test("실패→retry 성공 시 loaded 로 회복(retryable 리셋)")
@@ -89,9 +89,9 @@ struct AppDetailViewModelTests {
         }
 
         // 네트워크 회복 후 재시도 → loaded 도달, failed 잔여 없음.
-        repo.set(.success(detail))
+        await repo.set(.success(detail))
         await viewModel.load()
         #expect(viewModel.state == .loaded(AppDetailPresentation(detail: detail, now: now)))
-        #expect(repo.receivedIDs == [42, 42])
+        #expect(await repo.receivedIDs == [42, 42])
     }
 }

@@ -41,6 +41,7 @@ struct AppComposition {
 
     /// DI 컨테이너 구성. 실제로 resolve 되는 Core 구현체만 등록한다.
     /// StoreConfig / NetworkClient 는 iTunesClient 조립에만 쓰이므로 로컬 값으로 유지한다.
+    @MainActor
     private func makeContainer() -> DIContainer {
         let container = DIContainer()
 

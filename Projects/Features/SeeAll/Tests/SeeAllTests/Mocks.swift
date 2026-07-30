@@ -12,13 +12,12 @@ import SeeAllInterface
 @testable import SeeAll
 
 /// 결과/에러를 주입할 수 있는 `ChartRepository` 목. 수신 인자를 기록한다.
-final class MockChartRepository: ChartRepository, @unchecked Sendable {
+actor MockChartRepository: ChartRepository {
     enum Outcome: Sendable {
         case success([SeeAllItem])
         case failure
     }
 
-    private let lock = NSLock()
     private let outcome: Outcome
     private(set) var receivedFeed: ChartFeedKind?
     private(set) var receivedLimit: Int?
@@ -28,10 +27,8 @@ final class MockChartRepository: ChartRepository, @unchecked Sendable {
     }
 
     func chart(feed: ChartFeedKind, limit: Int) async throws -> [SeeAllItem] {
-        lock.withLock {
-            receivedFeed = feed
-            receivedLimit = limit
-        }
+        receivedFeed = feed
+        receivedLimit = limit
         switch outcome {
         case let .success(items): return items
         case .failure: throw MockError.network
@@ -40,7 +37,7 @@ final class MockChartRepository: ChartRepository, @unchecked Sendable {
 }
 
 /// chart 응답을 주입하는 `ITunesClient` 목(chart 만 의미 있음). 전달된 feed/limit 을 기록.
-final class MockITunesClient: ITunesClient, @unchecked Sendable {
+actor MockITunesClient: ITunesClient {
     private let entries: [RSSEntryDTO]
     private(set) var receivedFeed: ChartFeed?
     private(set) var receivedLimit: Int?

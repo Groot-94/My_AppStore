@@ -61,25 +61,25 @@ struct SearchViewModelTests {
         let (viewModel, repo, _) = makeViewModel(recents: ["a"])
         await viewModel.search(term: "   ")
         #expect(viewModel.state == .idle(["a"]))
-        #expect(repo.receivedTerms.isEmpty)
+        #expect(await repo.receivedTerms.isEmpty)
     }
 
     @Test("연속 검색 시 이전 요청 취소 — 최신 결과만 반영")
     func cancelsPreviousSearch() async {
         let (viewModel, repo, _) = makeViewModel()
         // 첫 검색은 지연시켜, 두 번째 검색이 취소하도록 유도.
-        repo.set(.delayed([TestSupport.item(id: 99, name: "stale")], 500_000_000))
+        await repo.set(.delayed([TestSupport.item(id: 99, name: "stale")], 500_000_000))
         let first = Task { await viewModel.search(term: "slow") }
 
         // 게이트로 첫 요청이 search() 에 실제 진입했음을 보장(스케줄링 무관 결정화).
         await repo.waitForFirstEntry()
 
-        repo.set(.success([TestSupport.item(id: 1, name: "fresh")]))
+        await repo.set(.success([TestSupport.item(id: 1, name: "fresh")]))
         await viewModel.search(term: "fast")
         _ = await first.value
 
         // 두 요청 모두 진입했고(순서 고정), 최신(fast) 결과만 반영, 취소된 stale 은 무시.
-        #expect(repo.receivedTerms == ["slow", "fast"])
+        #expect(await repo.receivedTerms == ["slow", "fast"])
         #expect(viewModel.state == .loaded([TestSupport.item(id: 1, name: "fresh")]))
     }
 
@@ -88,7 +88,7 @@ struct SearchViewModelTests {
         let items = [TestSupport.item(id: 7)]
         let (viewModel, repo, _) = makeViewModel(outcome: .success(items))
         await viewModel.selectRecent("지도")
-        #expect(repo.receivedTerms == ["지도"])
+        #expect(await repo.receivedTerms == ["지도"])
         #expect(viewModel.state == .loaded(items))
     }
 
@@ -118,9 +118,9 @@ struct SearchViewModelTests {
         if case .failed = viewModel.state {} else {
             Issue.record("expected failed")
         }
-        repo.set(.success([TestSupport.item(id: 1)]))
+        await repo.set(.success([TestSupport.item(id: 1)]))
         await viewModel.retry()
-        #expect(repo.receivedTerms == ["kakao", "kakao"])
+        #expect(await repo.receivedTerms == ["kakao", "kakao"])
         #expect(viewModel.state == .loaded([TestSupport.item(id: 1)]))
     }
 }

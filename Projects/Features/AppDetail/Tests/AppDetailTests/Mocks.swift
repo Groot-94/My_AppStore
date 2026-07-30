@@ -12,30 +12,26 @@ import Persistence
 @testable import AppDetail
 
 /// 결과/에러를 주입할 수 있는 `AppDetailRepository` 목.
-final class MockAppDetailRepository: AppDetailRepository, @unchecked Sendable {
+actor MockAppDetailRepository: AppDetailRepository {
     enum Outcome: Sendable {
         case success(AppDetail)
         case notFound
         case failure
     }
 
-    private let lock = NSLock()
-    private var _outcome: Outcome
+    private var outcome: Outcome
     private(set) var receivedIDs: [Int] = []
 
     init(outcome: Outcome) {
-        self._outcome = outcome
+        self.outcome = outcome
     }
 
     func set(_ outcome: Outcome) {
-        lock.withLock { _outcome = outcome }
+        self.outcome = outcome
     }
 
     func fetch(appID: Int) async throws -> AppDetail {
-        let outcome: Outcome = lock.withLock {
-            receivedIDs.append(appID)
-            return _outcome
-        }
+        receivedIDs.append(appID)
         switch outcome {
         case let .success(detail): return detail
         case .notFound: throw CoreError.notFound
@@ -76,8 +72,7 @@ actor MockCache: Cache {
 }
 
 /// 호출 여부/응답을 제어하는 `ITunesClient` 목(lookup 만 의미 있음).
-final class MockITunesClient: ITunesClient, @unchecked Sendable {
-    private let lock = NSLock()
+actor MockITunesClient: ITunesClient {
     private let lookupResult: [ITunesAppDTO]
     private(set) var lookupCallCount = 0
     private(set) var lookupIDs: [Int] = []
@@ -89,10 +84,8 @@ final class MockITunesClient: ITunesClient, @unchecked Sendable {
     func search(term: String, genreID: Int?, limit: Int) async throws -> [ITunesAppDTO] { [] }
 
     func lookup(ids: [Int]) async throws -> [ITunesAppDTO] {
-        lock.withLock {
-            lookupCallCount += 1
-            lookupIDs.append(contentsOf: ids)
-        }
+        lookupCallCount += 1
+        lookupIDs.append(contentsOf: ids)
         return lookupResult
     }
 

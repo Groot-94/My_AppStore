@@ -56,11 +56,10 @@ final class MockAppsRepository: AppsRepository, @unchecked Sendable {
 }
 
 /// chart/lookup 응답을 주입하는 `ITunesClient` 목.
-final class MockITunesClient: ITunesClient, @unchecked Sendable {
+actor MockITunesClient: ITunesClient {
     private let chartEntries: [RSSEntryDTO]
     private let lookupResult: [ITunesAppDTO]
     private(set) var lookupIDs: [Int] = []
-    private let lock = NSLock()
 
     init(chartEntries: [RSSEntryDTO] = [], lookupResult: [ITunesAppDTO] = []) {
         self.chartEntries = chartEntries
@@ -70,7 +69,7 @@ final class MockITunesClient: ITunesClient, @unchecked Sendable {
     func search(term: String, genreID: Int?, limit: Int) async throws -> [ITunesAppDTO] { [] }
 
     func lookup(ids: [Int]) async throws -> [ITunesAppDTO] {
-        lock.withLock { lookupIDs.append(contentsOf: ids) }
+        lookupIDs.append(contentsOf: ids)
         return lookupResult
     }
 

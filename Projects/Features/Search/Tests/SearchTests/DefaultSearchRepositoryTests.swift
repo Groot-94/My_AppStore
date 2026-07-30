@@ -27,9 +27,9 @@ struct DefaultSearchRepositoryTests {
 
         _ = try await repository.search(term: "카카오", limit: 25)
 
-        #expect(client.receivedTerm == "카카오")
-        #expect(client.receivedLimit == 25)
-        #expect(client.receivedGenreID == .some(nil))
+        #expect(await client.receivedTerm == "카카오")
+        #expect(await client.receivedLimit == 25)
+        #expect(await client.receivedGenreID == .some(nil))
     }
 
     @Test("DTO 를 SearchResultItem 으로 매핑해 반환")

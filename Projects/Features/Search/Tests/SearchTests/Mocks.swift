@@ -10,7 +10,7 @@ import ITunesKit
 @testable import Search
 
 /// 결과/에러를 주입할 수 있는 `SearchRepository` 목.
-final class MockSearchRepository: SearchRepository, @unchecked Sendable {
+actor MockSearchRepository: SearchRepository {
     enum Outcome: Sendable {
         case success([SearchResultItem])
         case failure
@@ -18,10 +18,9 @@ final class MockSearchRepository: SearchRepository, @unchecked Sendable {
         case delayed([SearchResultItem], UInt64)
     }
 
-    private let lock = NSLock()
-    private var _outcome: Outcome
-    private var _receivedTerms: [String] = []
-    private var _receivedLimits: [Int] = []
+    private var outcome: Outcome
+    private(set) var receivedTerms: [String] = []
+    private(set) var receivedLimits: [Int] = []
 
     /// 첫 요청이 `search()` 에 실제로 진입하면 이행되는 게이트(취소 테스트 결정화용).
     /// 테스트는 이 값을 await 한 뒤에야 두 번째 검색을 시작해, 스케줄링과 무관하게
@@ -30,46 +29,28 @@ final class MockSearchRepository: SearchRepository, @unchecked Sendable {
     private var didEnter = false
 
     init(outcome: Outcome = .success([])) {
-        self._outcome = outcome
+        self.outcome = outcome
     }
 
     func set(_ outcome: Outcome) {
-        lock.lock(); defer { lock.unlock() }
-        _outcome = outcome
-    }
-
-    var receivedTerms: [String] {
-        lock.lock(); defer { lock.unlock() }
-        return _receivedTerms
-    }
-
-    var receivedLimits: [Int] {
-        lock.lock(); defer { lock.unlock() }
-        return _receivedLimits
+        self.outcome = outcome
     }
 
     /// 첫 요청이 `search()` 에 진입할 때까지 대기한다.
     func waitForFirstEntry() async {
+        if didEnter { return }
         await withCheckedContinuation { continuation in
-            let alreadyEntered: Bool = lock.withLock {
-                if didEnter { return true }
-                entryContinuation = continuation
-                return false
-            }
-            if alreadyEntered { continuation.resume() }
+            entryContinuation = continuation
         }
     }
 
     func search(term: String, limit: Int) async throws -> [SearchResultItem] {
-        let outcome: Outcome = lock.withLock {
-            _receivedTerms.append(term)
-            _receivedLimits.append(limit)
-            didEnter = true
-            let continuation = entryContinuation
-            entryContinuation = nil
-            continuation?.resume()
-            return _outcome
-        }
+        receivedTerms.append(term)
+        receivedLimits.append(limit)
+        didEnter = true
+        entryContinuation?.resume()
+        entryContinuation = nil
+
         switch outcome {
         case let .success(items):
             return items
@@ -110,7 +91,7 @@ actor MockRecentSearches: RecentSearching {
 enum MockError: Error { case network }
 
 /// search 응답을 주입하는 `ITunesClient` 목. 전달된 term/genreID/limit 을 기록.
-final class MockITunesClient: ITunesClient, @unchecked Sendable {
+actor MockITunesClient: ITunesClient {
     private let dtos: [ITunesAppDTO]
     private(set) var receivedTerm: String?
     private(set) var receivedGenreID: Int??

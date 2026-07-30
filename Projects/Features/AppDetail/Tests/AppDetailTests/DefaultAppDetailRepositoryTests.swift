@@ -31,7 +31,7 @@ struct DefaultAppDetailRepositoryTests {
 
         let detail = try await repo.fetch(appID: 42)
         #expect(detail.name == "Cached App")
-        #expect(client.lookupCallCount == 0)
+        #expect(await client.lookupCallCount == 0)
         #expect(await cache.readKeys.contains(cacheKey))
         #expect(await cache.storedKeys.isEmpty)
     }
@@ -46,8 +46,8 @@ struct DefaultAppDetailRepositoryTests {
 
         let detail = try await repo.fetch(appID: 42)
         #expect(detail.name == "Network App")
-        #expect(client.lookupCallCount == 1)
-        #expect(client.lookupIDs == [42])
+        #expect(await client.lookupCallCount == 1)
+        #expect(await client.lookupIDs == [42])
         #expect(await cache.storedKeys == [cacheKey])
     }
 
@@ -60,7 +60,7 @@ struct DefaultAppDetailRepositoryTests {
 
         _ = try await repo.fetch(appID: 42)
         _ = try await repo.fetch(appID: 42)
-        #expect(client.lookupCallCount == 1)
+        #expect(await client.lookupCallCount == 1)
     }
 
     @Test("손상 캐시(디코드 실패)는 제거 후 네트워크 폴백")
@@ -74,7 +74,7 @@ struct DefaultAppDetailRepositoryTests {
         let detail = try await repo.fetch(appID: 42)
         #expect(detail.name == "App 42")
         #expect(await cache.removedKeys == [cacheKey])
-        #expect(client.lookupCallCount == 1)
+        #expect(await client.lookupCallCount == 1)
         #expect(await cache.storedKeys == [cacheKey])
     }
 
