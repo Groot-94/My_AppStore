@@ -18,20 +18,20 @@ public protocol LoadGamesFeedUseCase: Sendable {
 /// 기본 구현. 섹션은 독립 병렬 로드하며 개별 실패는 빈 섹션으로 흡수한다(부분 성공).
 public struct DefaultLoadGamesFeedUseCase: LoadGamesFeedUseCase {
     private let repository: GamesRepository
-    private let chartLimit: Int
+    /// API 에서 가져올 차트 항목 수(게임 필터로 상당수 탈락하므로 넉넉히 확보).
+    private let fetchLimit: Int
 
-    public init(repository: GamesRepository, chartLimit: Int = 50) {
+    public init(repository: GamesRepository, fetchLimit: Int = 50) {
         self.repository = repository
-        self.chartLimit = chartLimit
+        self.fetchLimit = fetchLimit
     }
 
     public func execute() async throws -> GamesFeed {
-        let curation = repository.curation()
         let categories = repository.categories()
 
-        async let free = section { GameGenrePolicy.gamesOnly(try await repository.chart(feed: .topFree, limit: chartLimit)) }
-        async let paid = section { GameGenrePolicy.gamesOnly(try await repository.chart(feed: .topPaid, limit: chartLimit)) }
-        async let featured = section { try await repository.featured(curation: curation) }
+        async let free = section { GameGenrePolicy.gamesOnly(try await repository.chart(feed: .topFree, limit: fetchLimit)) }
+        async let paid = section { GameGenrePolicy.gamesOnly(try await repository.chart(feed: .topPaid, limit: fetchLimit)) }
+        async let featured = section { try await repository.featured() }
 
         let feed = GamesFeed(
             featured: await featured,

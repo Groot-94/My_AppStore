@@ -39,9 +39,11 @@ final class MockChartRepository: ChartRepository, @unchecked Sendable {
     }
 }
 
-/// chart 응답을 주입하는 `ITunesClient` 목(chart 만 의미 있음).
+/// chart 응답을 주입하는 `ITunesClient` 목(chart 만 의미 있음). 전달된 feed/limit 을 기록.
 final class MockITunesClient: ITunesClient, @unchecked Sendable {
     private let entries: [RSSEntryDTO]
+    private(set) var receivedFeed: ChartFeed?
+    private(set) var receivedLimit: Int?
 
     init(entries: [RSSEntryDTO]) {
         self.entries = entries
@@ -49,7 +51,11 @@ final class MockITunesClient: ITunesClient, @unchecked Sendable {
 
     func search(term: String, genreID: Int?, limit: Int) async throws -> [ITunesAppDTO] { [] }
     func lookup(ids: [Int]) async throws -> [ITunesAppDTO] { [] }
-    func chart(_ feed: ChartFeed, limit: Int) async throws -> [RSSEntryDTO] { entries }
+    func chart(_ feed: ChartFeed, limit: Int) async throws -> [RSSEntryDTO] {
+        receivedFeed = feed
+        receivedLimit = limit
+        return entries
+    }
 }
 
 enum MockError: Error { case network }

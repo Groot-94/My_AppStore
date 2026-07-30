@@ -23,18 +23,15 @@ public struct DefaultAppsRepository: AppsRepository {
         return AppsMapper.chartItems(entries)
     }
 
-    public func featured(curation: [FeaturedCuration]) async throws -> [FeaturedApp] {
+    public func featured() async throws -> [FeaturedApp] {
+        let curation = AppsCurationDataSource.featured(bundle: bundle)
         guard !curation.isEmpty else { return [] }
         let dtos = try await client.lookup(ids: curation.map(\.id))
         return AppsMapper.featured(dtos, curation: curation)
     }
 
-    public func curation() -> [FeaturedCuration] {
-        AppsCuration.featured(bundle: bundle)
-    }
-
     public func categories() -> [Category] {
-        AppsCuration.categories
+        AppsCurationDataSource.categories
     }
 }
 

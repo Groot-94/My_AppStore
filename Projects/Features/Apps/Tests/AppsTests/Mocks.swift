@@ -20,20 +20,17 @@ final class MockAppsRepository: AppsRepository, @unchecked Sendable {
     private let free: Outcome<[ChartItem]>
     private let paid: Outcome<[ChartItem]>
     private let featuredOutcome: Outcome<[FeaturedApp]>
-    private let staticCuration: [FeaturedCuration]
     private let staticCategories: [Apps.Category]
 
     init(
         free: Outcome<[ChartItem]> = .success([]),
         paid: Outcome<[ChartItem]> = .success([]),
         featured: Outcome<[FeaturedApp]> = .success([]),
-        curation: [FeaturedCuration] = [FeaturedCuration(id: 1, tagline: "t")],
         categories: [Apps.Category] = [Apps.Category(genreID: 6014, name: "게임", symbol: "gamecontroller")]
     ) {
         self.free = free
         self.paid = paid
         self.featuredOutcome = featured
-        self.staticCuration = curation
         self.staticCategories = categories
     }
 
@@ -44,11 +41,10 @@ final class MockAppsRepository: AppsRepository, @unchecked Sendable {
         }
     }
 
-    func featured(curation: [FeaturedCuration]) async throws -> [FeaturedApp] {
+    func featured() async throws -> [FeaturedApp] {
         try resolve(featuredOutcome)
     }
 
-    func curation() -> [FeaturedCuration] { staticCuration }
     func categories() -> [Apps.Category] { staticCategories }
 
     private func resolve<T>(_ outcome: Outcome<T>) throws -> T {

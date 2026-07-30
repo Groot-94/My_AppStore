@@ -1,5 +1,5 @@
 //
-//  GamesCuration.swift
+//  GamesCurationDataSource.swift
 //  Games
 //
 //  Created by groot on 7/29/26.
@@ -17,7 +17,7 @@ struct GamesCurationFile: Decodable {
 }
 
 /// 정적 큐레이션/하위 카테고리 제공(번들 JSON + 하드코딩 카테고리).
-enum GamesCuration {
+enum GamesCurationDataSource {
     static func featured(bundle: Bundle) -> [FeaturedCuration] {
         guard let url = bundle.url(forResource: "featured_games", withExtension: "json"),
               let data = try? Data(contentsOf: url),

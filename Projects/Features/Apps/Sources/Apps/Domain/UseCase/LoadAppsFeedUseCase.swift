@@ -18,20 +18,20 @@ public protocol LoadAppsFeedUseCase: Sendable {
 /// 기본 구현. 섹션은 독립적으로 병렬 로드하며, 개별 실패는 빈 섹션으로 흡수한다(부분 성공).
 public struct DefaultLoadAppsFeedUseCase: LoadAppsFeedUseCase {
     private let repository: AppsRepository
-    private let chartLimit: Int
+    /// API 에서 가져올 차트 항목 수(표시는 상위 N 개만 사용).
+    private let fetchLimit: Int
 
-    public init(repository: AppsRepository, chartLimit: Int = 20) {
+    public init(repository: AppsRepository, fetchLimit: Int = 20) {
         self.repository = repository
-        self.chartLimit = chartLimit
+        self.fetchLimit = fetchLimit
     }
 
     public func execute() async throws -> AppsFeed {
-        let curation = repository.curation()
         let categories = repository.categories()
 
-        async let free = section { try await repository.chart(feed: .topFree, limit: chartLimit) }
-        async let paid = section { try await repository.chart(feed: .topPaid, limit: chartLimit) }
-        async let featured = section { try await repository.featured(curation: curation) }
+        async let free = section { try await repository.chart(feed: .topFree, limit: fetchLimit) }
+        async let paid = section { try await repository.chart(feed: .topPaid, limit: fetchLimit) }
+        async let featured = section { try await repository.featured() }
 
         let feed = AppsFeed(
             featured: await featured,

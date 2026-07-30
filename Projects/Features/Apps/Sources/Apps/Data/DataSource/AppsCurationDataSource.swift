@@ -1,5 +1,5 @@
 //
-//  AppsCuration.swift
+//  AppsCurationDataSource.swift
 //  Apps
 //
 //  Created by groot on 7/29/26.
@@ -17,7 +17,7 @@ struct AppsCurationFile: Decodable {
 }
 
 /// 정적 큐레이션/카테고리 제공(번들 JSON + 하드코딩 카테고리).
-enum AppsCuration {
+enum AppsCurationDataSource {
     /// `featured_apps.json` 로드. 실패 시 빈 배열(추천 섹션 숨김).
     static func featured(bundle: Bundle) -> [FeaturedCuration] {
         guard let url = bundle.url(forResource: "featured_apps", withExtension: "json"),

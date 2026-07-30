@@ -28,10 +28,8 @@ public struct FeaturedCuration: Sendable, Equatable {
 public protocol AppsRepository: Sendable {
     /// feed 차트를 조회해 순위 항목으로 반환한다.
     func chart(feed: AppsChartFeed, limit: Int) async throws -> [ChartItem]
-    /// 추천 큐레이션(정적)을 lookup 으로 보강해 추천 항목으로 반환한다(tagline 은 큐레이션 유지).
-    func featured(curation: [FeaturedCuration]) async throws -> [FeaturedApp]
-    /// 정적 추천 큐레이션 목록.
-    func curation() -> [FeaturedCuration]
+    /// 정적 추천 큐레이션을 lookup 으로 보강해 추천 항목으로 반환한다(tagline 은 큐레이션 유지).
+    func featured() async throws -> [FeaturedApp]
     /// 정적 카테고리 목록.
     func categories() -> [Category]
 }

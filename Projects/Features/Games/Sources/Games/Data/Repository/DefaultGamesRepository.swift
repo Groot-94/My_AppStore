@@ -23,18 +23,15 @@ public struct DefaultGamesRepository: GamesRepository {
         return GamesMapper.chartItems(entries)
     }
 
-    public func featured(curation: [FeaturedCuration]) async throws -> [FeaturedApp] {
+    public func featured() async throws -> [FeaturedApp] {
+        let curation = GamesCurationDataSource.featured(bundle: bundle)
         guard !curation.isEmpty else { return [] }
         let dtos = try await client.lookup(ids: curation.map(\.id))
         return GamesMapper.featured(dtos, curation: curation)
     }
 
-    public func curation() -> [FeaturedCuration] {
-        GamesCuration.featured(bundle: bundle)
-    }
-
     public func categories() -> [Category] {
-        GamesCuration.categories
+        GamesCurationDataSource.categories
     }
 }
 

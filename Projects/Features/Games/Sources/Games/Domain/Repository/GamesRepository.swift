@@ -29,7 +29,6 @@ public struct FeaturedCuration: Sendable, Equatable {
 /// 차트는 장르 정보를 담은 항목 전체를 반환하며, 게임 필터는 UseCase(Domain 정책)가 수행한다.
 public protocol GamesRepository: Sendable {
     func chart(feed: GamesChartFeed, limit: Int) async throws -> [ChartItem]
-    func featured(curation: [FeaturedCuration]) async throws -> [FeaturedApp]
-    func curation() -> [FeaturedCuration]
+    func featured() async throws -> [FeaturedApp]
     func categories() -> [Category]
 }

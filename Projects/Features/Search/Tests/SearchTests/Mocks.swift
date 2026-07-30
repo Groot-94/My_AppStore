@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ITunesKit
 @testable import Search
 
 /// 결과/에러를 주입할 수 있는 `SearchRepository` 목.
@@ -114,6 +115,27 @@ final class MockRecentSearches: RecentSearching, @unchecked Sendable {
 }
 
 enum MockError: Error { case network }
+
+/// search 응답을 주입하는 `ITunesClient` 목. 전달된 term/genreID/limit 을 기록.
+final class MockITunesClient: ITunesClient, @unchecked Sendable {
+    private let dtos: [ITunesAppDTO]
+    private(set) var receivedTerm: String?
+    private(set) var receivedGenreID: Int??
+    private(set) var receivedLimit: Int?
+
+    init(dtos: [ITunesAppDTO]) {
+        self.dtos = dtos
+    }
+
+    func search(term: String, genreID: Int?, limit: Int) async throws -> [ITunesAppDTO] {
+        receivedTerm = term
+        receivedGenreID = genreID
+        receivedLimit = limit
+        return dtos
+    }
+    func lookup(ids: [Int]) async throws -> [ITunesAppDTO] { [] }
+    func chart(_ feed: ChartFeed, limit: Int) async throws -> [RSSEntryDTO] { [] }
+}
 
 /// 테스트 픽스처 헬퍼.
 enum TestSupport {
