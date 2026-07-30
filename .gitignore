@@ -23,6 +23,7 @@ Package.resolved
 # 로컬 전용 (공개 리포지토리 제외)
 CLAUDE.md
 .claude/
+docs/
 
 # 기타
 *.log
