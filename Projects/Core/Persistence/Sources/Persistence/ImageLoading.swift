@@ -26,11 +26,11 @@ public struct DefaultImageLoader: ImageLoading {
 
     public func loadImageData(from url: URL) async throws -> Data {
         let key = url.absoluteString
-        if let cached = cache.data(forKey: key) {
+        if let cached = await cache.data(forKey: key) {
             return cached
         }
         let (data, _) = try await session.data(from: url)
-        cache.store(data, forKey: key, ttl: ttl)
+        await cache.store(data, forKey: key, ttl: ttl)
         return data
     }
 }

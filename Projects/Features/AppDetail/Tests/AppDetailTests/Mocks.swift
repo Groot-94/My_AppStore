@@ -45,8 +45,7 @@ final class MockAppDetailRepository: AppDetailRepository, @unchecked Sendable {
 }
 
 /// 저장/조회를 기록하는 `Cache` 목. 초기 저장 데이터를 주입할 수 있다.
-final class MockCache: Cache, @unchecked Sendable {
-    private let lock = NSLock()
+actor MockCache: Cache {
     private var storage: [String: Data]
     private(set) var readKeys: [String] = []
     private(set) var storedKeys: [String] = []
@@ -57,28 +56,22 @@ final class MockCache: Cache, @unchecked Sendable {
     }
 
     func data(forKey key: String) -> Data? {
-        lock.withLock {
-            readKeys.append(key)
-            return storage[key]
-        }
+        readKeys.append(key)
+        return storage[key]
     }
 
     func store(_ data: Data, forKey key: String, ttl: TimeInterval?) {
-        lock.withLock {
-            storedKeys.append(key)
-            storage[key] = data
-        }
+        storedKeys.append(key)
+        storage[key] = data
     }
 
     func removeValue(forKey key: String) {
-        lock.withLock {
-            removedKeys.append(key)
-            storage[key] = nil
-        }
+        removedKeys.append(key)
+        storage[key] = nil
     }
 
     func removeAll() {
-        lock.withLock { storage.removeAll() }
+        storage.removeAll()
     }
 }
 

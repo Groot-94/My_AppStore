@@ -11,23 +11,23 @@ import CryptoKit
 /// 만료 정책(TTL)이 있는 키-값 캐시(메모리 + 디스크). 값은 `Data` 바이트로 고정.
 public protocol Cache: Sendable {
     /// 만료되지 않은 값을 반환. 없거나 만료면 `nil`(만료 항목은 정리).
-    func data(forKey key: String) -> Data?
+    func data(forKey key: String) async -> Data?
     /// TTL(초) 과 함께 저장. `ttl` 이 `nil` 이면 기본 TTL 사용.
-    func store(_ data: Data, forKey key: String, ttl: TimeInterval?)
+    func store(_ data: Data, forKey key: String, ttl: TimeInterval?) async
     /// 개별 키 제거.
-    func removeValue(forKey key: String)
+    func removeValue(forKey key: String) async
     /// 전체 비움(메모리 + 디스크).
-    func removeAll()
+    func removeAll() async
 }
 
 public extension Cache {
-    func store(_ data: Data, forKey key: String) {
-        store(data, forKey: key, ttl: nil)
+    func store(_ data: Data, forKey key: String) async {
+        await store(data, forKey: key, ttl: nil)
     }
 }
 
-/// 메모리(NSCache) + 디스크(파일) 2계층 캐시. 디스크 접근을 `NSLock` 으로 보호.
-public final class DefaultCache: Cache, @unchecked Sendable {
+/// 메모리(NSCache) + 디스크(파일) 2계층 캐시. 접근을 `actor` 격리로 직렬화한다.
+public actor DefaultCache: Cache {
     private final class Entry {
         let data: Data
         let expiry: Date
@@ -42,7 +42,6 @@ public final class DefaultCache: Cache, @unchecked Sendable {
     private let defaultTTL: TimeInterval
     private let maxDiskBytes: Int
     private let fileManager = FileManager.default
-    private let lock = NSLock()
 
     /// - Parameters:
     ///   - name: 디스크 하위 폴더명(캐시 네임스페이스).
@@ -59,6 +58,7 @@ public final class DefaultCache: Cache, @unchecked Sendable {
     ) {
         self.defaultTTL = defaultTTL
         self.maxDiskBytes = maxDiskBytes
+        let fileManager = FileManager.default
         let base = directory ?? fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         self.directory = base.appendingPathComponent(name, isDirectory: true)
         try? fileManager.createDirectory(at: self.directory, withIntermediateDirectories: true)
@@ -67,7 +67,7 @@ public final class DefaultCache: Cache, @unchecked Sendable {
         // 재조회가 없어도 만료 디스크 항목을 제거하고, 총량 상한을 강제한다.
         if sweepOnInit {
             Task.detached(priority: .utility) { [weak self] in
-                self?.sweepExpired()
+                await self?.sweepExpired()
             }
         }
     }
@@ -82,8 +82,6 @@ public final class DefaultCache: Cache, @unchecked Sendable {
         }
 
         // 2) 디스크
-        lock.lock()
-        defer { lock.unlock() }
         let (fileURL, metaURL) = urls(forKey: key)
         guard
             let expiry = readExpiry(metaURL),
@@ -105,8 +103,6 @@ public final class DefaultCache: Cache, @unchecked Sendable {
         let expiry = Date().addingTimeInterval(ttl ?? defaultTTL)
         memory.setObject(Entry(data: data, expiry: expiry), forKey: key as NSString)
 
-        lock.lock()
-        defer { lock.unlock() }
         let (fileURL, metaURL) = urls(forKey: key)
         try? data.write(to: fileURL, options: .atomic)
         writeExpiry(expiry, to: metaURL)
@@ -114,8 +110,6 @@ public final class DefaultCache: Cache, @unchecked Sendable {
 
     public func removeValue(forKey key: String) {
         memory.removeObject(forKey: key as NSString)
-        lock.lock()
-        defer { lock.unlock() }
         let (fileURL, metaURL) = urls(forKey: key)
         try? fileManager.removeItem(at: fileURL)
         try? fileManager.removeItem(at: metaURL)
@@ -123,8 +117,6 @@ public final class DefaultCache: Cache, @unchecked Sendable {
 
     public func removeAll() {
         memory.removeAllObjects()
-        lock.lock()
-        defer { lock.unlock() }
         try? fileManager.removeItem(at: directory)
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
     }
@@ -142,9 +134,6 @@ public final class DefaultCache: Cache, @unchecked Sendable {
     /// 상한을 넘으면 오래된(만료 임박) 순으로 추가 삭제한다. init 스윕/테스트가 직접 호출.
     /// 디스크 상태만 정리하며 메모리 캐시는 건드리지 않는다(만료 항목은 조회 시 걸러짐).
     func sweepExpired(now: Date = Date()) {
-        lock.lock()
-        defer { lock.unlock() }
-
         guard let names = try? fileManager.contentsOfDirectory(atPath: directory.path) else { return }
         // .meta 를 가진 항목만 유효한 캐시 엔트리로 간주한다.
         let metaNames = names.filter { $0.hasSuffix(".meta") }

@@ -32,8 +32,8 @@ struct DefaultAppDetailRepositoryTests {
         let detail = try await repo.fetch(appID: 42)
         #expect(detail.name == "Cached App")
         #expect(client.lookupCallCount == 0)
-        #expect(cache.readKeys.contains(cacheKey))
-        #expect(cache.storedKeys.isEmpty)
+        #expect(await cache.readKeys.contains(cacheKey))
+        #expect(await cache.storedKeys.isEmpty)
     }
 
     @Test("캐시 미스 시 Lookup 호출 후 캐시 저장")
@@ -48,7 +48,7 @@ struct DefaultAppDetailRepositoryTests {
         #expect(detail.name == "Network App")
         #expect(client.lookupCallCount == 1)
         #expect(client.lookupIDs == [42])
-        #expect(cache.storedKeys == [cacheKey])
+        #expect(await cache.storedKeys == [cacheKey])
     }
 
     @Test("저장 후 재조회는 캐시 히트(네트워크 1회만)")
@@ -73,9 +73,9 @@ struct DefaultAppDetailRepositoryTests {
 
         let detail = try await repo.fetch(appID: 42)
         #expect(detail.name == "App 42")
-        #expect(cache.removedKeys == [cacheKey])
+        #expect(await cache.removedKeys == [cacheKey])
         #expect(client.lookupCallCount == 1)
-        #expect(cache.storedKeys == [cacheKey])
+        #expect(await cache.storedKeys == [cacheKey])
     }
 
     @Test("Lookup 결과 0건이면 notFound")
