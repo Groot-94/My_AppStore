@@ -98,10 +98,13 @@ final class SeeAllViewController: UIViewController {
     private func render(_ state: SeeAllViewModel.State) {
         switch state {
         case .loading:
+            items = []
             showOverlay(loadingIndicator)
             loadingIndicator.startAnimating()
 
-        case let .loaded(items) where items.isEmpty:
+        case .empty:
+            items = []
+            collectionView.reloadData()
             showOverlay(messageView)
             messageView.configure(
                 title: "표시할 항목이 없습니다",
@@ -115,8 +118,10 @@ final class SeeAllViewController: UIViewController {
             collectionView.reloadData()
 
         case let .failed(message):
+            items = []
+            collectionView.reloadData()
             showOverlay(messageView)
-            messageView.configure(title: "불러올 수 없음", message: message, actionTitle: "다시 시도")
+            messageView.configure(title: CommonStrings.Error.loadFailedTitle, message: message, actionTitle: "다시 시도")
         }
     }
 
@@ -157,7 +162,7 @@ extension SeeAllViewController: UICollectionViewDataSource, UICollectionViewDele
         row.configure(with: model(for: item), loader: imageLoader)
         row.onGetTapped = { [weak self, weak row] in
             guard let self, let row else { return }
-            row.configure(with: self.model(for: item, actionTitle: "열기"), loader: nil)
+            row.configure(with: self.model(for: item, actionTitle: CommonStrings.Action.open), loader: nil)
         }
         return row
     }

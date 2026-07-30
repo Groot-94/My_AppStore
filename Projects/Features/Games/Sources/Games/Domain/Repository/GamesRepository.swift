@@ -26,7 +26,7 @@ public struct FeaturedCuration: Sendable, Equatable {
 
 /// Games 데이터 접근 계약(피처 Domain 소유, 프로토콜만).
 ///
-/// 차트는 RSS 결과에서 게임(genres "Games"/genreId 6014) 항목만 필터해 반환한다.
+/// 차트는 장르 정보를 담은 항목 전체를 반환하며, 게임 필터는 UseCase(Domain 정책)가 수행한다.
 public protocol GamesRepository: Sendable {
     func chart(feed: GamesChartFeed, limit: Int) async throws -> [ChartItem]
     func featured(curation: [FeaturedCuration]) async throws -> [FeaturedApp]

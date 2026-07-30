@@ -10,11 +10,10 @@ import ITunesKit
 
 /// `ITunesAppDTO` → `AppDetail` 변환기.
 ///
-/// 실응답에서 자주 빠지는 필드에 안전 기본값을 채운다(평점 0, 가격 "무료").
+/// 실응답에서 자주 빠지는 필드에 안전 기본값을 채운다(평점 0). 가격은 API 원본을 그대로 두고
+/// "무료" 폴백은 표시 계층에서 결정한다.
 /// `fileSizeBytes` 는 실응답에서 문자열로 오므로 `Int64` 로 변환한다.
 enum AppDetailMapper {
-    static let freePriceText = "무료"
-
     static func map(_ dto: ITunesAppDTO) -> AppDetail {
         map(AppDetailCacheDTO(dto))
     }
@@ -33,7 +32,7 @@ enum AppDetailMapper {
             updatedAt: parseDate(dto.currentVersionReleaseDate ?? dto.releaseDate),
             rating: dto.averageUserRating ?? 0,
             ratingCount: dto.userRatingCount ?? 0,
-            priceText: dto.formattedPrice ?? freePriceText,
+            price: dto.formattedPrice,
             contentRating: dto.contentAdvisoryRating ?? dto.trackContentRating ?? "",
             fileSizeBytes: dto.fileSizeBytes.flatMap(Int64.init),
             minimumOSVersion: dto.minimumOsVersion ?? "",

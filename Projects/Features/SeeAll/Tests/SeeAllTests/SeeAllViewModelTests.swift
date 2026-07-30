@@ -41,11 +41,11 @@ struct SeeAllViewModelTests {
         #expect(viewModel.state == .loaded(items))
     }
 
-    @Test("빈 결과도 loaded([]) 로 전이(안내 문구는 View 위임)")
-    func emptyStaysLoaded() async {
+    @Test("빈 결과는 empty 상태로 전이")
+    func transitionsToEmpty() async {
         let viewModel = makeViewModel(outcome: .success([]))
         await viewModel.load()
-        #expect(viewModel.state == .loaded([]))
+        #expect(viewModel.state == .empty)
     }
 
     @Test("실패 시 failed 로 전이")

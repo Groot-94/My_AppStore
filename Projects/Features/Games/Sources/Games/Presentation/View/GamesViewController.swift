@@ -118,7 +118,7 @@ final class GamesViewController: UIViewController {
 
         case let .failed(message):
             showOverlay(messageView)
-            messageView.configure(title: "불러올 수 없음", message: message, actionTitle: "다시 시도")
+            messageView.configure(title: CommonStrings.Error.loadFailedTitle, message: message, actionTitle: "다시 시도")
         }
     }
 
@@ -199,7 +199,7 @@ final class GamesViewController: UIViewController {
         row.configure(with: model(for: item), loader: imageLoader)
         row.onGetTapped = { [weak row, weak self] in
             guard let row, let self else { return }
-            row.configure(with: self.model(for: item, actionTitle: "열기"), loader: nil)
+            row.configure(with: self.model(for: item, actionTitle: CommonStrings.Action.open), loader: nil)
         }
         row.translatesAutoresizingMaskIntoConstraints = false
         row.heightAnchor.constraint(equalToConstant: 68).isActive = true

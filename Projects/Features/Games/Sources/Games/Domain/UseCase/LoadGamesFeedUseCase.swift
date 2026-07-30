@@ -29,8 +29,8 @@ public struct DefaultLoadGamesFeedUseCase: LoadGamesFeedUseCase {
         let curation = repository.curation()
         let categories = repository.categories()
 
-        async let free = section { try await repository.chart(feed: .topFree, limit: chartLimit) }
-        async let paid = section { try await repository.chart(feed: .topPaid, limit: chartLimit) }
+        async let free = section { GameGenrePolicy.gamesOnly(try await repository.chart(feed: .topFree, limit: chartLimit)) }
+        async let paid = section { GameGenrePolicy.gamesOnly(try await repository.chart(feed: .topPaid, limit: chartLimit)) }
         async let featured = section { try await repository.featured(curation: curation) }
 
         let feed = GamesFeed(

@@ -33,8 +33,8 @@ public struct AppDetail: Sendable, Equatable, Identifiable {
     public let rating: Double
     /// 평점 수(0 기본).
     public let ratingCount: Int
-    /// 가격 표시 문구("무료" 기본).
-    public let priceText: String
+    /// API 원본 가격 문자열(`formattedPrice`). nil 이면 표시 계층에서 "무료" 폴백.
+    public let price: String?
     /// 연령 등급(예: "4+").
     public let contentRating: String
     /// 파일 크기(바이트, 미상이면 nil).
@@ -57,7 +57,7 @@ public struct AppDetail: Sendable, Equatable, Identifiable {
         updatedAt: Date?,
         rating: Double,
         ratingCount: Int,
-        priceText: String,
+        price: String?,
         contentRating: String,
         fileSizeBytes: Int64?,
         minimumOSVersion: String,
@@ -75,7 +75,7 @@ public struct AppDetail: Sendable, Equatable, Identifiable {
         self.updatedAt = updatedAt
         self.rating = rating
         self.ratingCount = ratingCount
-        self.priceText = priceText
+        self.price = price
         self.contentRating = contentRating
         self.fileSizeBytes = fileSizeBytes
         self.minimumOSVersion = minimumOSVersion

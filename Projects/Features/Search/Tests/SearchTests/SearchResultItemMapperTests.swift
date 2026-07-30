@@ -31,13 +31,13 @@ struct SearchResultItemMapperTests {
         #expect(first.name == "카카오톡 KakaoTalk")
         #expect(first.sellerName == "Kakao Corp.")
         #expect(first.genre == "Social Networking")
-        #expect(first.priceText == "무료")
+        #expect(first.price == "무료")
         #expect(first.rating > 3.4 && first.rating < 3.5)
         #expect(first.ratingCount == 844631)
         #expect(first.iconURL?.absoluteString.hasSuffix("512x512bb.jpg") == true)
     }
 
-    @Test("평점/가격/장르 누락 시 안전 기본값(0, 무료)")
+    @Test("평점/가격/장르 누락 시 안전 기본값(0, price nil)")
     func fillsSafeDefaults() throws {
         // 필수 필드(trackId/trackName)만 있는 최소 DTO.
         let json = Data(#"{"trackId": 42, "trackName": "Bare App"}"#.utf8)
@@ -48,7 +48,7 @@ struct SearchResultItemMapperTests {
         #expect(item.name == "Bare App")
         #expect(item.rating == 0)
         #expect(item.ratingCount == 0)
-        #expect(item.priceText == "무료")
+        #expect(item.price == nil)
         #expect(item.genre.isEmpty)
         #expect(item.sellerName.isEmpty)
         #expect(item.iconURL == nil)

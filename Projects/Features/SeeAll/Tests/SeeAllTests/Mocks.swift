@@ -21,17 +21,15 @@ final class MockChartRepository: ChartRepository, @unchecked Sendable {
     private let lock = NSLock()
     private let outcome: Outcome
     private(set) var receivedFeed: ChartFeedKind?
-    private(set) var receivedGenreID: Int??
     private(set) var receivedLimit: Int?
 
     init(outcome: Outcome) {
         self.outcome = outcome
     }
 
-    func chart(feed: ChartFeedKind, genreID: Int?, limit: Int) async throws -> [SeeAllItem] {
+    func chart(feed: ChartFeedKind, limit: Int) async throws -> [SeeAllItem] {
         lock.withLock {
             receivedFeed = feed
-            receivedGenreID = .some(genreID)
             receivedLimit = limit
         }
         switch outcome {
@@ -57,8 +55,13 @@ final class MockITunesClient: ITunesClient, @unchecked Sendable {
 enum MockError: Error { case network }
 
 enum TestSupport {
-    static func item(rank: Int, id: Int, name: String = "App") -> SeeAllItem {
-        SeeAllItem(rank: rank, id: id, name: name, artistName: "Artist", artworkURL: nil, genre: "Games")
+    static func item(
+        rank: Int,
+        id: Int,
+        name: String = "App",
+        genres: [Genre] = [Genre(id: 6014, name: "Games")]
+    ) -> SeeAllItem {
+        SeeAllItem(rank: rank, id: id, name: name, artistName: "Artist", artworkURL: nil, genres: genres)
     }
 
     static func entries(named name: String) throws -> [RSSEntryDTO] {

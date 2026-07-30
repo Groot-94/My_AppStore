@@ -62,8 +62,12 @@ final class MockGamesRepository: GamesRepository, @unchecked Sendable {
 enum MockError: Error { case network }
 
 enum TestSupport {
-    static func chartItem(rank: Int, id: Int) -> ChartItem {
-        ChartItem(rank: rank, id: id, name: "Game \(id)", artistName: "Studio", artworkURL: nil, genre: "게임")
+    static func chartItem(
+        rank: Int,
+        id: Int,
+        genres: [Genre] = [Genre(id: 6014, name: "게임")]
+    ) -> ChartItem {
+        ChartItem(rank: rank, id: id, name: "Game \(id)", artistName: "Studio", artworkURL: nil, genres: genres)
     }
 
     static func featured(id: Int) -> FeaturedApp {

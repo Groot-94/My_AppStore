@@ -34,7 +34,7 @@ struct AppDetailMapperTests {
         #expect(detail.minimumOSVersion == "17.0")
         #expect(detail.rating > 3.4 && detail.rating < 3.5)
         #expect(detail.ratingCount == 844631)
-        #expect(detail.priceText == "무료")
+        #expect(detail.price == "무료")
         #expect(detail.languages.contains("KO"))
         #expect(detail.releaseNotes?.isEmpty == false)
         #expect(detail.description.isEmpty == false)
@@ -65,7 +65,7 @@ struct AppDetailMapperTests {
         #expect(detail.screenshotURLs.count == 2)
     }
 
-    @Test("누락 필드 안전 기본값(평점 0, 가격 무료, 크기 nil)")
+    @Test("누락 필드 안전 기본값(평점 0, 가격 nil, 크기 nil)")
     func fillsSafeDefaults() throws {
         let json = Data(#"{"trackId": 42, "trackName": "Bare App"}"#.utf8)
         let dto = try JSONDecoder().decode(ITunesAppDTO.self, from: json)
@@ -75,7 +75,7 @@ struct AppDetailMapperTests {
         #expect(detail.name == "Bare App")
         #expect(detail.rating == 0)
         #expect(detail.ratingCount == 0)
-        #expect(detail.priceText == "무료")
+        #expect(detail.price == nil)
         #expect(detail.genre.isEmpty)
         #expect(detail.sellerName.isEmpty)
         #expect(detail.iconURL == nil)

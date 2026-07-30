@@ -102,7 +102,7 @@ enum MockError: Error { case network }
 
 /// 테스트용 엔티티 픽스처.
 enum TestSupport {
-    static func detail(id: Int, name: String = "App") -> AppDetail {
+    static func detail(id: Int, name: String = "App", price: String? = nil) -> AppDetail {
         AppDetail(
             id: id,
             name: name,
@@ -116,7 +116,7 @@ enum TestSupport {
             updatedAt: nil,
             rating: 4.1,
             ratingCount: 1000,
-            priceText: "무료",
+            price: price,
             contentRating: "4+",
             fileSizeBytes: 1024 * 1024,
             minimumOSVersion: "17.0",

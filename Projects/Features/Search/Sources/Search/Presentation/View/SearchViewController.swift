@@ -145,7 +145,7 @@ final class SearchViewController: UIViewController {
         case let .failed(message):
             showOverlay(messageView)
             messageView.configure(
-                title: "불러올 수 없음",
+                title: CommonStrings.Error.loadFailedTitle,
                 message: message,
                 actionTitle: "다시 시도"
             )
@@ -280,7 +280,7 @@ extension SearchViewController: UITableViewDataSource, UITableViewDelegate {
             subtitle: item.genre.isEmpty ? item.sellerName : item.genre,
             rating: item.rating > 0 ? item.rating : nil,
             ratingCount: item.ratingCount > 0 ? item.ratingCount : nil,
-            actionTitle: item.priceText
+            actionTitle: item.price ?? CommonStrings.Price.free
         )
     }
 
@@ -291,7 +291,7 @@ extension SearchViewController: UITableViewDataSource, UITableViewDelegate {
             subtitle: item.genre.isEmpty ? item.sellerName : item.genre,
             rating: item.rating > 0 ? item.rating : nil,
             ratingCount: item.ratingCount > 0 ? item.ratingCount : nil,
-            actionTitle: "열기"
+            actionTitle: CommonStrings.Action.open
         )
     }
 }

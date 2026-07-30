@@ -16,18 +16,20 @@ public struct DefaultAppDetailBuilder: AppDetailBuilder {
     private let iTunesClient: ITunesClient
     private let cache: Cache
     private let imageLoader: ImageLoading
+    private let now: Date
 
-    public init(iTunesClient: ITunesClient, cache: Cache, imageLoader: ImageLoading) {
+    public init(iTunesClient: ITunesClient, cache: Cache, imageLoader: ImageLoading, now: Date = Date()) {
         self.iTunesClient = iTunesClient
         self.cache = cache
         self.imageLoader = imageLoader
+        self.now = now
     }
 
     @MainActor
     public func build(appID: Int) -> UIViewController {
         let repository = DefaultAppDetailRepository(client: iTunesClient, cache: cache)
         let useCase = DefaultLoadAppDetailUseCase(repository: repository)
-        let viewModel = AppDetailViewModel(appID: appID, useCase: useCase)
+        let viewModel = AppDetailViewModel(appID: appID, useCase: useCase, now: now)
         return AppDetailViewController(viewModel: viewModel, imageLoader: imageLoader)
     }
 }

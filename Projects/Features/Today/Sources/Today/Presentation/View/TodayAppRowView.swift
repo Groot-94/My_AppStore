@@ -47,7 +47,7 @@ final class TodayAppRowView: UIView {
         textStack.alignment = .leading
 
         getButton.onTap = { [weak self] in
-            self?.getButton.configure(title: "열기")
+            self?.getButton.configure(title: CommonStrings.Action.open)
         }
 
         for view in [iconView, textStack, getButton] {

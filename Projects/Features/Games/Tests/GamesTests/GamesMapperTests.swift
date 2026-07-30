@@ -13,27 +13,14 @@ import ITunesKit
 @Suite("GamesMapper")
 struct GamesMapperTests {
 
-    @Test("게임 필터: genreId 6014 / 이름 매칭 항목만 남기고 rank 재부여")
-    func filtersGamesAndReranks() throws {
+    @Test("차트 매핑: 필터 없이 rank(순서)·id 변환, 장르 보존")
+    func mapsChartWithGenres() throws {
         let entries = try TestSupport.entries(named: "rss-games")
-        let items = GamesMapper.gameChartItems(entries)
+        let items = GamesMapper.chartItems(entries)
 
-        #expect(items.map(\.id) == [1229016807, 431946152])
-        #expect(items.map(\.rank) == [1, 2])
-    }
-
-    @Test("빈 genres 항목은 게임 판별 불가로 제외")
-    func excludesEmptyGenres() throws {
-        let entries = try TestSupport.entries(named: "rss-games")
-        let items = GamesMapper.gameChartItems(entries)
-        #expect(items.contains { $0.id == 999999999 } == false)
-    }
-
-    @Test("게임이 없는 차트(top-paid 픽스처)는 빈 결과")
-    func nonGamesChartYieldsEmpty() throws {
-        let entries = try TestSupport.entries(named: "rss-toppaid")
-        let items = GamesMapper.gameChartItems(entries)
-        #expect(items.isEmpty)
+        #expect(items.count == entries.count)
+        #expect(items.first?.rank == 1)
+        #expect(items.contains { $0.genres.contains { $0.id == 6014 } })
     }
 
     @Test("추천 매핑: lookup DTO 와 큐레이션 tagline 병합")

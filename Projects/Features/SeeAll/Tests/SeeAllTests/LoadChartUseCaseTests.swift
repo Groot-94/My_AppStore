@@ -13,29 +13,34 @@ import SeeAllInterface
 @Suite("DefaultLoadChartUseCase")
 struct LoadChartUseCaseTests {
 
-    @Test("input feed/genreID/limit 를 Repository 로 전달하고 결과 반환")
-    func forwardsInputAndReturnsResult() async throws {
+    @Test("genreID nil 이면 Repository 결과를 그대로 반환")
+    func passesThroughWhenNoGenre() async throws {
         let expected = [TestSupport.item(rank: 1, id: 1), TestSupport.item(rank: 2, id: 2)]
         let repo = MockChartRepository(outcome: .success(expected))
         let useCase = DefaultLoadChartUseCase(repository: repo, limit: 50)
-        let input = SeeAllInput(title: "인기 무료 게임", feed: .topFree, genreID: 6014)
+        let input = SeeAllInput(title: "인기 무료 앱", feed: .topPaid, genreID: nil)
 
         let result = try await useCase.execute(input: input)
         #expect(result == expected)
-        #expect(repo.receivedFeed == .topFree)
-        #expect(repo.receivedGenreID == .some(6014))
+        #expect(repo.receivedFeed == .topPaid)
         #expect(repo.receivedLimit == 50)
     }
 
-    @Test("genreID nil 도 그대로 전달")
-    func forwardsNilGenreID() async throws {
-        let repo = MockChartRepository(outcome: .success([]))
+    @Test("genreID 6014 이면 게임 필터·rank 재부여 후 반환")
+    func filtersWhenGameGenre() async throws {
+        let items = [
+            TestSupport.item(rank: 1, id: 1, genres: [Genre(id: 6014, name: "Games")]),
+            TestSupport.item(rank: 2, id: 2, genres: [Genre(id: 6005, name: "Social")]),
+            TestSupport.item(rank: 3, id: 3, genres: [Genre(id: 6014, name: "Games")]),
+        ]
+        let repo = MockChartRepository(outcome: .success(items))
         let useCase = DefaultLoadChartUseCase(repository: repo)
-        let input = SeeAllInput(title: "인기 무료 앱", feed: .topPaid, genreID: nil)
+        let input = SeeAllInput(title: "인기 무료 게임", feed: .topFree, genreID: 6014)
 
-        _ = try await useCase.execute(input: input)
-        #expect(repo.receivedFeed == .topPaid)
-        #expect(repo.receivedGenreID == .some(Int?.none))
+        let result = try await useCase.execute(input: input)
+        #expect(result.map(\.id) == [1, 3])
+        #expect(result.map(\.rank) == [1, 2])
+        #expect(repo.receivedFeed == .topFree)
     }
 
     @Test("Repository 실패 전파")

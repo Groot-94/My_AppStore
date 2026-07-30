@@ -31,31 +31,39 @@ struct AppDetailViewModelTests {
         }
     }
 
-    @Test("성공 시 loaded 로 전이")
+    @Test("성공 시 loaded(presentation) 로 전이")
     func transitionsToLoaded() async {
+        let now = Date(timeIntervalSince1970: 0)
         let detail = TestSupport.detail(id: 42, name: "카카오톡")
-        let (viewModel, repo) = makeViewModel(outcome: .success(detail))
+        let repo = MockAppDetailRepository(outcome: .success(detail))
+        let useCase = DefaultLoadAppDetailUseCase(repository: repo)
+        let viewModel = AppDetailViewModel(appID: 42, useCase: useCase, now: now)
         await viewModel.load()
-        #expect(viewModel.state == .loaded(detail))
+        #expect(viewModel.state == .loaded(AppDetailPresentation(detail: detail, now: now)))
         #expect(repo.receivedIDs == [42])
     }
 
-    @Test("0건(notFound) 이면 앱을 찾을 수 없음 + 재시도 불가")
+    @Test("0건(notFound) 이면 재시도 불가 failed")
     func notFoundIsNotRetryable() async {
         let (viewModel, _) = makeViewModel(outcome: .notFound)
         await viewModel.load()
-        #expect(viewModel.state == .failed("앱을 찾을 수 없음"))
-        #expect(viewModel.isRetryable == false)
+        if case let .failed(_, retryable) = viewModel.state {
+            #expect(retryable == false)
+        } else {
+            Issue.record("expected failed, got \(viewModel.state)")
+        }
     }
 
-    @Test("네트워크 실패면 failed + 재시도 가능")
+    @Test("네트워크 실패면 재시도 가능 failed(본문=네트워크 문구)")
     func networkFailureIsRetryable() async {
         let (viewModel, _) = makeViewModel(outcome: .failure)
         await viewModel.load()
-        if case .failed = viewModel.state {} else {
+        if case let .failed(message, retryable) = viewModel.state {
+            #expect(retryable == true)
+            #expect(message == "불러올 수 없습니다. 네트워크를 확인하세요.")
+        } else {
             Issue.record("expected failed, got \(viewModel.state)")
         }
-        #expect(viewModel.isRetryable == true)
     }
 
     @Test("재시도(load 재호출) 시 다시 요청")

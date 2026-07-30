@@ -23,8 +23,8 @@ public struct SearchResultItem: Sendable, Equatable, Identifiable {
     public let rating: Double
     /// 평점 수(0 기본).
     public let ratingCount: Int
-    /// 가격 표시 문구("무료" 기본).
-    public let priceText: String
+    /// API 원본 가격 문자열(`formattedPrice`). nil 이면 표시 계층에서 "무료" 폴백.
+    public let price: String?
 
     public init(
         id: Int,
@@ -34,7 +34,7 @@ public struct SearchResultItem: Sendable, Equatable, Identifiable {
         iconURL: URL?,
         rating: Double,
         ratingCount: Int,
-        priceText: String
+        price: String?
     ) {
         self.id = id
         self.name = name
@@ -43,6 +43,6 @@ public struct SearchResultItem: Sendable, Equatable, Identifiable {
         self.iconURL = iconURL
         self.rating = rating
         self.ratingCount = ratingCount
-        self.priceText = priceText
+        self.price = price
     }
 }

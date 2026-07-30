@@ -7,6 +7,7 @@
 
 import Foundation
 import Observation
+import DesignSystem
 
 /// Apps 탭 ViewModel. UI 프레임워크 비의존(@Observable + @MainActor).
 ///
@@ -34,7 +35,7 @@ public final class AppsViewModel {
             let feed = try await useCase.execute()
             state = .loaded(feed)
         } catch {
-            state = .failed("불러올 수 없습니다. 네트워크를 확인하세요.")
+            state = .failed(CommonStrings.Error.networkBody)
         }
     }
 }

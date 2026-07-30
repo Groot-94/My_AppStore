@@ -14,7 +14,7 @@ public protocol LoadChartUseCase: Sendable {
     func execute(input: SeeAllInput) async throws -> [SeeAllItem]
 }
 
-/// 기본 구현. feed/genreID 를 Repository 로 위임한다(필터·rank 재부여는 Data 계층).
+/// 기본 구현. Repository 로 차트를 로드하고, `genreID` 가 있으면 게임 정책으로 필터·rank 재부여한다.
 public struct DefaultLoadChartUseCase: LoadChartUseCase {
     private let repository: ChartRepository
     private let limit: Int
@@ -25,6 +25,8 @@ public struct DefaultLoadChartUseCase: LoadChartUseCase {
     }
 
     public func execute(input: SeeAllInput) async throws -> [SeeAllItem] {
-        try await repository.chart(feed: input.feed, genreID: input.genreID, limit: limit)
+        let items = try await repository.chart(feed: input.feed, limit: limit)
+        guard let genreID = input.genreID else { return items }
+        return GameGenrePolicy.filtered(items, genreID: genreID)
     }
 }

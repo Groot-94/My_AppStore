@@ -7,6 +7,8 @@
 
 import Foundation
 import Observation
+import CoreKit
+import DesignSystem
 
 /// 검색 화면 ViewModel. UI 프레임워크 비의존(@Observable + @MainActor).
 ///
@@ -67,7 +69,13 @@ public final class SearchViewModel {
                 return
             } catch {
                 if Task.isCancelled { return }
-                self.state = .failed("불러올 수 없습니다. 네트워크를 확인하세요.")
+                // invalidInput 은 여기 도달하지 않아야 하나(진입 시 공백 차단), 검증 로직이
+                // 어긋나도 네트워크 문구로 오표기하지 않도록 empty 로 처리한다.
+                if case CoreError.invalidInput = error {
+                    self.state = .empty(trimmed)
+                } else {
+                    self.state = .failed(CommonStrings.Error.networkBody)
+                }
             }
         }
         searchTask = task
@@ -98,6 +106,7 @@ public final class SearchViewModel {
     public func cancelSearch() {
         searchTask?.cancel()
         searchTask = nil
+        lastTerm = nil
         refreshIdle()
     }
 

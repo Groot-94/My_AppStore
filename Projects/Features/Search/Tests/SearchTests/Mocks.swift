@@ -88,7 +88,7 @@ enum MockError: Error { case network }
 
 /// 테스트 픽스처 헬퍼.
 enum TestSupport {
-    static func item(id: Int, name: String = "App") -> SearchResultItem {
+    static func item(id: Int, name: String = "App", price: String? = nil) -> SearchResultItem {
         SearchResultItem(
             id: id,
             name: name,
@@ -97,7 +97,7 @@ enum TestSupport {
             iconURL: nil,
             rating: 4.0,
             ratingCount: 100,
-            priceText: "무료"
+            price: price
         )
     }
 }

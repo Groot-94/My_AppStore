@@ -113,7 +113,7 @@ final class ArcadeViewController: UIViewController {
 
         case let .failed(message):
             showOverlay(messageView)
-            messageView.configure(title: "불러올 수 없음", message: message, actionTitle: "다시 시도")
+            messageView.configure(title: CommonStrings.Error.loadFailedTitle, message: message, actionTitle: "다시 시도")
         }
     }
 

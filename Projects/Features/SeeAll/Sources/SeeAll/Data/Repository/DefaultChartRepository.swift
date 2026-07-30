@@ -9,7 +9,7 @@ import Foundation
 import ITunesKit
 import SeeAllInterface
 
-/// `ChartRepository` 기본 구현. RSS 차트를 조회해 매핑하고, genreID 가 있으면 장르 필터를 적용한다.
+/// `ChartRepository` 기본 구현. RSS 차트를 조회해 장르 정보를 포함한 항목으로 매핑한다.
 public struct DefaultChartRepository: ChartRepository {
     private let client: ITunesClient
 
@@ -17,11 +17,8 @@ public struct DefaultChartRepository: ChartRepository {
         self.client = client
     }
 
-    public func chart(feed: ChartFeedKind, genreID: Int?, limit: Int) async throws -> [SeeAllItem] {
+    public func chart(feed: ChartFeedKind, limit: Int) async throws -> [SeeAllItem] {
         let entries = try await client.chart(feed.asChartFeed, limit: limit)
-        if let genreID {
-            return SeeAllItemMapper.map(entries, genreID: genreID)
-        }
         return SeeAllItemMapper.map(entries)
     }
 }

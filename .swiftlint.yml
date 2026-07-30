@@ -53,7 +53,7 @@ file_header:
                     \/\/  SWIFTLINT_CURRENT_FILENAME
                     \/\/  .*
                     \/\/
-                    \/\/  Created by groot on 7\/29\/26\.
+                    \/\/  Created by groot on \d+\/\d+\/\d+\.
                     \/\/
 
 # 계층 경계 강제(docs/07): 피처 Domain/ 폴더에서 UI/데이터 계층 import 금지.

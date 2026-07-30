@@ -107,17 +107,17 @@ final class AppDetailViewController: UIViewController {
             showOverlay(loadingIndicator)
             loadingIndicator.startAnimating()
 
-        case let .loaded(detail):
+        case let .loaded(model):
             showOverlay(nil)
-            title = detail.name
-            rebuildSections(with: detail)
+            title = model.name
+            rebuildSections(with: model)
 
-        case let .failed(message):
+        case let .failed(message, retryable):
             showOverlay(messageView)
             messageView.configure(
-                title: message,
-                message: viewModel.isRetryable ? "네트워크를 확인하고 다시 시도하세요." : "삭제되었거나 이 지역에서 제공되지 않는 앱입니다.",
-                actionTitle: viewModel.isRetryable ? "다시 시도" : nil
+                title: retryable ? CommonStrings.Error.loadFailedTitle : "앱을 찾을 수 없음",
+                message: message,
+                actionTitle: retryable ? "다시 시도" : nil
             )
         }
     }
@@ -133,24 +133,22 @@ final class AppDetailViewController: UIViewController {
 
     // MARK: - Sections
 
-    private func rebuildSections(with detail: AppDetail) {
+    private func rebuildSections(with model: AppDetailPresentation) {
         for subview in contentStack.arrangedSubviews {
             contentStack.removeArrangedSubview(subview)
             subview.removeFromSuperview()
         }
 
-        let model = AppDetailPresentation(detail: detail)
-
         contentStack.addArrangedSubview(makeHeader(model))
         contentStack.addArrangedSubview(makeMetaStrip(model))
 
-        if !detail.screenshotURLs.isEmpty {
-            contentStack.addArrangedSubview(makeScreenshots(detail.screenshotURLs))
+        if !model.screenshotURLs.isEmpty {
+            contentStack.addArrangedSubview(makeScreenshots(model.screenshotURLs))
         }
-        if !detail.description.isEmpty {
-            contentStack.addArrangedSubview(makeDescription(detail.description))
+        if !model.description.isEmpty {
+            contentStack.addArrangedSubview(makeDescription(model.description))
         }
-        if let notes = detail.releaseNotes {
+        if let notes = model.releaseNotes {
             contentStack.addArrangedSubview(makeReleaseNotes(version: model.versionLine, notes: notes))
         }
         contentStack.addArrangedSubview(makeInfoTable(model))
@@ -180,7 +178,7 @@ final class AppDetailViewController: UIViewController {
 
         let getButton = GetButton()
         getButton.configure(title: model.priceText)
-        getButton.onTap = { [weak getButton] in getButton?.configure(title: "열기") }
+        getButton.onTap = { [weak getButton] in getButton?.configure(title: CommonStrings.Action.open) }
 
         let menuButton = UIButton(type: .system)
         menuButton.setImage(UIImage(systemName: "ellipsis.circle"), for: .normal)

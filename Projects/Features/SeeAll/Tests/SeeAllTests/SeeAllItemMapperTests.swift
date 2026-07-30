@@ -46,32 +46,17 @@ struct SeeAllItemMapperTests {
         #expect(items.first?.rank == 1)
     }
 
-    @Test("genreID 6014 필터: 게임만 남기고 rank 재부여")
-    func filtersGamesAndReranks() throws {
-        let entries = try TestSupport.entries(named: "rss-games")
-        let items = SeeAllItemMapper.map(entries, genreID: 6014)
-
-        #expect(items.count == 2)
-        #expect(items.map(\.id) == [1229016807, 431946152])
-        #expect(items.map(\.rank) == [1, 2])
-    }
-
-    @Test("빈 genres 항목은 필터 시 제외")
-    func excludesEmptyGenres() throws {
-        let entries = try TestSupport.entries(named: "rss-games")
-        let items = SeeAllItemMapper.map(entries, genreID: 6014)
-        #expect(items.contains { $0.id == 999999999 } == false)
-    }
-
-    @Test("genre 이름 '게임'/'Games' 포함으로도 매칭")
-    func matchesByGenreName() throws {
+    @Test("RSS 장르 id/name 을 엔티티 genres 로 보존")
+    func preservesGenres() throws {
         let json = Data(#"""
         {"feed":{"results":[
-        {"artistName":"A","id":"1","name":"G","artworkUrl100":"https://e.com/x.png","genres":[{"name":"Games"}]}
+        {"artistName":"A","id":"1","name":"G","artworkUrl100":"https://e.com/x.png",
+         "genres":[{"name":"Games","genreId":"6014"}]}
         ]}}
         """#.utf8)
         let entries = try JSONDecoder().decode(RSSFeedResponse.self, from: json).feed.results
-        let items = SeeAllItemMapper.map(entries, genreID: 6014)
-        #expect(items.count == 1)
+        let items = SeeAllItemMapper.map(entries)
+        #expect(items.first?.genres == [Genre(id: 6014, name: "Games")])
+        #expect(items.first?.genre == "Games")
     }
 }

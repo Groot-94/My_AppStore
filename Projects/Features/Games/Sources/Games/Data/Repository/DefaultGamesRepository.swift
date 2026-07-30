@@ -8,7 +8,7 @@
 import Foundation
 import ITunesKit
 
-/// `GamesRepository` 기본 구현. RSS 차트를 게임 필터해 매핑하고, 추천은 Lookup 배치로 보강한다.
+/// `GamesRepository` 기본 구현. RSS 차트를 장르 정보 포함해 매핑하고, 추천은 Lookup 배치로 보강한다.
 public struct DefaultGamesRepository: GamesRepository {
     private let client: ITunesClient
     private let bundle: Bundle
@@ -20,7 +20,7 @@ public struct DefaultGamesRepository: GamesRepository {
 
     public func chart(feed: GamesChartFeed, limit: Int) async throws -> [ChartItem] {
         let entries = try await client.chart(feed.asChartFeed, limit: limit)
-        return GamesMapper.gameChartItems(entries)
+        return GamesMapper.chartItems(entries)
     }
 
     public func featured(curation: [FeaturedCuration]) async throws -> [FeaturedApp] {
