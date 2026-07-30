@@ -16,11 +16,11 @@ final class TodayViewController: UIViewController {
     /// 앱 선택 → AppDetail push 훅. Builder 가 주입.
     var onSelectApp: (Int) -> Void = { _ in }
 
-    private let scrollView = UIScrollView()
-    private let contentStack = UIStackView()
+    private let container = StateContainerView(
+        layoutMargins: UIEdgeInsets(top: 8, left: 16, bottom: 32, right: 16),
+        spacing: 20
+    )
     private let refreshControl = UIRefreshControl()
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let messageView = MessageStateView()
 
     private var subscription: ObservationSubscription?
 
@@ -39,8 +39,7 @@ final class TodayViewController: UIViewController {
         view.backgroundColor = AppColors.background
         navigationController?.navigationBar.prefersLargeTitles = true
         setupNavigationBar()
-        setupScrollView()
-        setupOverlays()
+        setupContainer()
         bind()
         Task { await viewModel.load() }
     }
@@ -55,9 +54,7 @@ final class TodayViewController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: profile)
     }
 
-    private func setupScrollView() {
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.alwaysBounceVertical = true
+    private func setupContainer() {
         refreshControl.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             Task {
@@ -65,46 +62,20 @@ final class TodayViewController: UIViewController {
                 self.refreshControl.endRefreshing()
             }
         }, for: .valueChanged)
-        scrollView.refreshControl = refreshControl
-        view.addSubview(scrollView)
+        container.setRefreshControl(refreshControl)
 
-        contentStack.axis = .vertical
-        contentStack.spacing = 20
-        contentStack.isLayoutMarginsRelativeArrangement = true
-        contentStack.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 32, right: 16)
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(contentStack)
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-        ])
-    }
-
-    private func setupOverlays() {
-        for overlay in [loadingIndicator, messageView] as [UIView] {
-            overlay.translatesAutoresizingMaskIntoConstraints = false
-            overlay.isHidden = true
-            view.addSubview(overlay)
-            NSLayoutConstraint.activate([
-                overlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            ])
-        }
-        messageView.onAction = { [weak self] in
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.onMessageAction = { [weak self] in
             guard let self else { return }
             Task { await self.viewModel.load() }
         }
+        view.addSubview(container)
+        NSLayoutConstraint.activate([
+            container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            container.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
     }
 
     // MARK: - Observation
@@ -121,37 +92,27 @@ final class TodayViewController: UIViewController {
         case .loading:
             // refresh 중이면 기존 카드를 덮지 않고 refreshControl 스피너만 노출.
             if refreshControl.isRefreshing { return }
-            showOverlay(loadingIndicator)
-            loadingIndicator.startAnimating()
+            container.apply(.loading)
 
         case let .loaded(cards):
-            showOverlay(nil)
+            container.apply(.content)
             rebuildCards(cards)
 
         case let .failed(message):
-            showOverlay(messageView)
-            messageView.configure(title: CommonStrings.Error.loadFailedTitle, message: message, actionTitle: "다시 시도")
+            container.apply(.message(
+                title: CommonStrings.Error.loadFailedTitle,
+                message: message,
+                actionTitle: "다시 시도"
+            ))
         }
-    }
-
-    private func showOverlay(_ overlay: UIView?) {
-        let isMessage = (overlay === messageView)
-        let isLoading = (overlay === loadingIndicator)
-        messageView.isHidden = !isMessage
-        loadingIndicator.isHidden = !isLoading
-        if !isLoading { loadingIndicator.stopAnimating() }
-        scrollView.isHidden = isMessage || isLoading
     }
 
     // MARK: - Cards
 
     private func rebuildCards(_ cards: [TodayCard]) {
-        for subview in contentStack.arrangedSubviews {
-            contentStack.removeArrangedSubview(subview)
-            subview.removeFromSuperview()
-        }
+        container.clearContent()
 
-        contentStack.addArrangedSubview(makeDateHeader())
+        container.contentStack.addArrangedSubview(makeDateHeader())
 
         for card in cards {
             let view: UIView
@@ -161,7 +122,7 @@ final class TodayViewController: UIViewController {
             case .list:
                 view = makeListCard(card)
             }
-            contentStack.addArrangedSubview(view)
+            container.contentStack.addArrangedSubview(view)
         }
     }
 

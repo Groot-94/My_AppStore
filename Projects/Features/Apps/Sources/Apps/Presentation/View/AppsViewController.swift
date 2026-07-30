@@ -19,10 +19,10 @@ final class AppsViewController: UIViewController {
     /// "모두 보기" 탭 → SeeAll push 훅. Builder 가 주입.
     var onSeeAll: (SeeAllInput) -> Void = { _ in }
 
-    private let scrollView = UIScrollView()
-    private let contentStack = UIStackView()
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let messageView = MessageStateView()
+    private let container = StateContainerView(
+        layoutMargins: UIEdgeInsets(top: 16, left: 0, bottom: 32, right: 0),
+        spacing: 28
+    )
 
     private var subscription: ObservationSubscription?
 
@@ -40,8 +40,7 @@ final class AppsViewController: UIViewController {
         title = "앱"
         view.backgroundColor = AppColors.background
         navigationController?.navigationBar.prefersLargeTitles = true
-        setupScrollView()
-        setupOverlays()
+        setupContainer()
         bind()
         Task { await viewModel.load() }
     }
@@ -53,48 +52,19 @@ final class AppsViewController: UIViewController {
 
     // MARK: - Setup
 
-    private func setupScrollView() {
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.alwaysBounceVertical = true
-        view.addSubview(scrollView)
-
-        contentStack.axis = .vertical
-        contentStack.spacing = 28
-        contentStack.isLayoutMarginsRelativeArrangement = true
-        contentStack.layoutMargins = UIEdgeInsets(top: 16, left: 0, bottom: 32, right: 0)
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(contentStack)
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-        ])
-    }
-
-    private func setupOverlays() {
-        for overlay in [loadingIndicator, messageView] as [UIView] {
-            overlay.translatesAutoresizingMaskIntoConstraints = false
-            overlay.isHidden = true
-            view.addSubview(overlay)
-            NSLayoutConstraint.activate([
-                overlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            ])
-        }
-        messageView.onAction = { [weak self] in
+    private func setupContainer() {
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.onMessageAction = { [weak self] in
             guard let self else { return }
             Task { await self.viewModel.load() }
         }
+        view.addSubview(container)
+        NSLayoutConstraint.activate([
+            container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            container.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
     }
 
     // MARK: - Observation
@@ -109,51 +79,41 @@ final class AppsViewController: UIViewController {
     private func render(_ state: AppsViewModel.State) {
         switch state {
         case .loading:
-            showOverlay(loadingIndicator)
-            loadingIndicator.startAnimating()
+            container.apply(.loading)
 
         case let .loaded(feed):
-            showOverlay(nil)
+            container.apply(.content)
             rebuildSections(with: feed)
 
         case let .failed(message):
-            showOverlay(messageView)
-            messageView.configure(title: CommonStrings.Error.loadFailedTitle, message: message, actionTitle: "다시 시도")
+            container.apply(.message(
+                title: CommonStrings.Error.loadFailedTitle,
+                message: message,
+                actionTitle: "다시 시도"
+            ))
         }
-    }
-
-    private func showOverlay(_ overlay: UIView?) {
-        let isMessage = (overlay === messageView)
-        let isLoading = (overlay === loadingIndicator)
-        messageView.isHidden = !isMessage
-        loadingIndicator.isHidden = !isLoading
-        if !isLoading { loadingIndicator.stopAnimating() }
-        scrollView.isHidden = isMessage || isLoading
     }
 
     // MARK: - Sections
 
     private func rebuildSections(with feed: AppsFeed) {
-        for subview in contentStack.arrangedSubviews {
-            contentStack.removeArrangedSubview(subview)
-            subview.removeFromSuperview()
-        }
+        container.clearContent()
 
         if !feed.featured.isEmpty {
-            contentStack.addArrangedSubview(makeCarousel(feed.featured))
+            container.contentStack.addArrangedSubview(makeCarousel(feed.featured))
         }
         if !feed.topFree.isEmpty {
-            contentStack.addArrangedSubview(
+            container.contentStack.addArrangedSubview(
                 makeChartSection(title: topFreeTitle, items: feed.topFree, feed: .topFree)
             )
         }
         if !feed.topPaid.isEmpty {
-            contentStack.addArrangedSubview(
+            container.contentStack.addArrangedSubview(
                 makeChartSection(title: topPaidTitle, items: feed.topPaid, feed: .topPaid)
             )
         }
         if !feed.categories.isEmpty {
-            contentStack.addArrangedSubview(makeCategorySection(feed.categories))
+            container.contentStack.addArrangedSubview(makeCategorySection(feed.categories))
         }
     }
 
@@ -195,26 +155,16 @@ final class AppsViewController: UIViewController {
     }
 
     private func makeChartRow(_ item: ChartItem) -> UIView {
-        let row = ChartRankRow(frame: .zero)
+        let row = ChartRowView()
         row.configure(with: model(for: item), loader: imageLoader)
-        row.onGetTapped = { [weak row, weak self] in
+        row.onTap = { [weak self] in self?.onSelectApp(item.id) }
+        row.onGetTap = { [weak row, weak self] in
             guard let row, let self else { return }
             row.configure(with: self.model(for: item, actionTitle: CommonStrings.Action.open), loader: nil)
         }
         row.translatesAutoresizingMaskIntoConstraints = false
         row.heightAnchor.constraint(equalToConstant: 68).isActive = true
-
-        let tap = ChartRowTapGesture(target: self, action: #selector(chartRowTapped))
-        tap.appID = item.id
-        // 받기 버튼(GetButton)은 자체 터치를 처리하도록 셀 탭 제스처를 양보.
-        tap.delegate = self
-        row.addGestureRecognizer(tap)
         return row
-    }
-
-    @objc
-    private func chartRowTapped(_ gesture: ChartRowTapGesture) {
-        onSelectApp(gesture.appID)
     }
 
     private func makeCategorySection(_ categories: [Category]) -> UIView {
@@ -235,30 +185,14 @@ final class AppsViewController: UIViewController {
     // MARK: - Helpers
 
     private func makeHeader(title: String, seeAll: (() -> Void)?) -> UIView {
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = AppFont.bold(.title2)
-        titleLabel.textColor = AppColors.label
-
-        let stack: UIStackView
-        if let seeAll {
-            let button = UIButton(type: .system)
-            button.setTitle("모두 보기", for: .normal)
-            button.titleLabel?.font = AppFont.subheadline
-            button.setTitleColor(AppColors.accent, for: .normal)
-            button.addAction(UIAction { _ in seeAll() }, for: .touchUpInside)
-            button.setContentHuggingPriority(.required, for: .horizontal)
-            stack = UIStackView(arrangedSubviews: [titleLabel, UIView(), button])
-        } else {
-            stack = UIStackView(arrangedSubviews: [titleLabel])
-        }
-        stack.axis = .horizontal
-        stack.alignment = .firstBaseline
-        return wrapInMargins(stack)
+        let header = SectionHeaderView()
+        header.configure(title: title, actionTitle: seeAll == nil ? nil : "모두 보기")
+        header.onAction = seeAll
+        return wrapInMargins(header)
     }
 
-    private func model(for item: ChartItem, actionTitle: String? = "받기") -> ChartRankRow.Model {
-        ChartRankRow.Model(
+    private func model(for item: ChartItem, actionTitle: String? = "받기") -> ChartRowView.Model {
+        ChartRowView.Model(
             rank: item.rank,
             iconURL: item.artworkURL,
             title: item.name,
@@ -279,21 +213,4 @@ final class AppsViewController: UIViewController {
         ])
         return container
     }
-}
-
-// MARK: - UIGestureRecognizerDelegate
-
-extension AppsViewController: UIGestureRecognizerDelegate {
-    func gestureRecognizer(
-        _ gestureRecognizer: UIGestureRecognizer,
-        shouldReceive touch: UITouch
-    ) -> Bool {
-        // 받기 버튼(UIControl) 위 터치는 셀 탭으로 처리하지 않는다.
-        !(touch.view is UIControl)
-    }
-}
-
-/// appID 를 실어 나르는 셀 탭 제스처.
-final class ChartRowTapGesture: UITapGestureRecognizer {
-    var appID = 0
 }

@@ -2,117 +2,47 @@
 //  ChartRankRow.swift
 //  DesignSystem
 //
-//  Created by groot on 7/29/26.
+//  Created by groot on 7/30/26.
 //
 
 import UIKit
 import CoreKit
 
-/// 차트 순위 행(순번 + 아이콘 + 이름/장르). SeeAll·차트 목록 공용.
+/// `ChartRowView` 를 감싼 컬렉션 뷰 셀. SeeAll 등 셀 기반 목록 경로에서 사용한다.
+/// 행 선택은 collectionView 의 `didSelectItemAt` 이 담당하고, 받기 버튼 탭만 `onGetTapped` 로 노출한다.
 public final class ChartRankRow: UICollectionViewCell {
     public static let reuseID = "ChartRankRow"
 
-    /// 행 구성 모델.
-    public struct Model: Sendable, Equatable {
-        public let rank: Int
-        public let iconURL: URL?
-        public let title: String
-        public let subtitle: String
-        public let actionTitle: String?
+    public typealias Model = ChartRowView.Model
 
-        public init(
-            rank: Int,
-            iconURL: URL?,
-            title: String,
-            subtitle: String,
-            actionTitle: String? = "받기"
-        ) {
-            self.rank = rank
-            self.iconURL = iconURL
-            self.title = title
-            self.subtitle = subtitle
-            self.actionTitle = actionTitle
-        }
+    private let rowView = ChartRowView()
+
+    public var onGetTapped: (() -> Void)? {
+        get { rowView.onGetTap }
+        set { rowView.onGetTap = newValue }
     }
-
-    private let rankLabel = UILabel()
-    private let iconView = AppIconView(cornerRadius: 12)
-    private let titleLabel = UILabel()
-    private let subtitleLabel = UILabel()
-    private let getButton = GetButton()
-
-    public var onGetTapped: (() -> Void)?
 
     public override init(frame: CGRect) {
         super.init(frame: frame)
-        setup()
+        rowView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(rowView)
+        NSLayoutConstraint.activate([
+            rowView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            rowView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            rowView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            rowView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+        ])
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    private func setup() {
-        rankLabel.font = AppFont.subheadline
-        rankLabel.textColor = AppColors.secondaryLabel
-        rankLabel.textAlignment = .center
-        rankLabel.setContentHuggingPriority(.required, for: .horizontal)
-
-        titleLabel.font = AppFont.body
-        titleLabel.textColor = AppColors.label
-        titleLabel.numberOfLines = 1
-
-        subtitleLabel.font = AppFont.caption
-        subtitleLabel.textColor = AppColors.secondaryLabel
-        subtitleLabel.numberOfLines = 1
-
-        let textStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
-        textStack.axis = .vertical
-        textStack.spacing = 2
-
-        getButton.onTap = { [weak self] in self?.onGetTapped?() }
-
-        for view in [rankLabel, iconView, textStack, getButton] {
-            view.translatesAutoresizingMaskIntoConstraints = false
-            contentView.addSubview(view)
-        }
-
-        NSLayoutConstraint.activate([
-            rankLabel.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
-            rankLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            rankLabel.widthAnchor.constraint(equalToConstant: 24),
-
-            iconView.leadingAnchor.constraint(equalTo: rankLabel.trailingAnchor, constant: 8),
-            iconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            iconView.topAnchor.constraint(greaterThanOrEqualTo: contentView.topAnchor, constant: 8),
-            iconView.widthAnchor.constraint(equalToConstant: 52),
-            iconView.heightAnchor.constraint(equalToConstant: 52),
-
-            textStack.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 12),
-            textStack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            textStack.trailingAnchor.constraint(lessThanOrEqualTo: getButton.leadingAnchor, constant: -12),
-
-            getButton.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
-            getButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-        ])
-    }
-
     public func configure(with model: Model, loader: ImageLoading?) {
-        rankLabel.text = "\(model.rank)"
-        if let loader { iconView.configure(loader: loader) }
-        iconView.setImage(url: model.iconURL)
-        titleLabel.text = model.title
-        subtitleLabel.text = model.subtitle
-        if let actionTitle = model.actionTitle {
-            getButton.isHidden = false
-            getButton.configure(title: actionTitle)
-        } else {
-            getButton.isHidden = true
-        }
+        rowView.configure(with: model, loader: loader)
     }
 
     public override func prepareForReuse() {
         super.prepareForReuse()
-        iconView.setImage(url: nil)
-        onGetTapped = nil
+        rowView.prepareForReuse()
     }
 }

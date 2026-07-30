@@ -23,6 +23,7 @@ public final class DIContainer: DIResolver, @unchecked Sendable {
     public init() {}
 
     /// 타입에 대한 생성 팩토리 등록.
+    /// 팩토리는 매 `resolve` 호출마다 실행된다 — 싱글턴은 인스턴스를 클로저에 캡처해 등록한다.
     public func register<T>(_ type: T.Type, factory: @escaping @Sendable () -> T) {
         lock.lock()
         defer { lock.unlock() }

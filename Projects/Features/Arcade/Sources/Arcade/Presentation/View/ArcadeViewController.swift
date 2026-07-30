@@ -16,10 +16,10 @@ final class ArcadeViewController: UIViewController {
     /// 게임 선택 → AppDetail push 훅. Builder 가 주입.
     var onSelectApp: (Int) -> Void = { _ in }
 
-    private let scrollView = UIScrollView()
-    private let contentStack = UIStackView()
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let messageView = MessageStateView()
+    private let container = StateContainerView(
+        layoutMargins: UIEdgeInsets(top: 16, left: 0, bottom: 32, right: 0),
+        spacing: 28
+    )
 
     private var subscription: ObservationSubscription?
 
@@ -40,56 +40,26 @@ final class ArcadeViewController: UIViewController {
         title = "아케이드"
         view.backgroundColor = AppColors.background
         navigationController?.navigationBar.prefersLargeTitles = true
-        setupScrollView()
-        setupOverlays()
+        setupContainer()
         bind()
         Task { await viewModel.load() }
     }
 
     // MARK: - Setup
 
-    private func setupScrollView() {
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.alwaysBounceVertical = true
-        view.addSubview(scrollView)
-
-        contentStack.axis = .vertical
-        contentStack.spacing = 28
-        contentStack.isLayoutMarginsRelativeArrangement = true
-        contentStack.layoutMargins = UIEdgeInsets(top: 16, left: 0, bottom: 32, right: 0)
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(contentStack)
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-        ])
-    }
-
-    private func setupOverlays() {
-        for overlay in [loadingIndicator, messageView] as [UIView] {
-            overlay.translatesAutoresizingMaskIntoConstraints = false
-            overlay.isHidden = true
-            view.addSubview(overlay)
-            NSLayoutConstraint.activate([
-                overlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            ])
-        }
-        messageView.onAction = { [weak self] in
+    private func setupContainer() {
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.onMessageAction = { [weak self] in
             guard let self else { return }
             Task { await self.viewModel.load() }
         }
+        view.addSubview(container)
+        NSLayoutConstraint.activate([
+            container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            container.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
     }
 
     // MARK: - Observation
@@ -104,50 +74,40 @@ final class ArcadeViewController: UIViewController {
     private func render(_ state: ArcadeViewModel.State) {
         switch state {
         case .loading:
-            showOverlay(loadingIndicator)
-            loadingIndicator.startAnimating()
+            container.apply(.loading)
 
         case let .loaded(feed):
-            showOverlay(nil)
+            container.apply(.content)
             rebuildSections(with: feed)
 
         case let .failed(message):
-            showOverlay(messageView)
-            messageView.configure(title: CommonStrings.Error.loadFailedTitle, message: message, actionTitle: "다시 시도")
+            container.apply(.message(
+                title: CommonStrings.Error.loadFailedTitle,
+                message: message,
+                actionTitle: "다시 시도"
+            ))
         }
-    }
-
-    private func showOverlay(_ overlay: UIView?) {
-        let isMessage = (overlay === messageView)
-        let isLoading = (overlay === loadingIndicator)
-        messageView.isHidden = !isMessage
-        loadingIndicator.isHidden = !isLoading
-        if !isLoading { loadingIndicator.stopAnimating() }
-        scrollView.isHidden = isMessage || isLoading
     }
 
     // MARK: - Sections
 
     private func rebuildSections(with feed: ArcadeFeed) {
-        for subview in contentStack.arrangedSubviews {
-            contentStack.removeArrangedSubview(subview)
-            subview.removeFromSuperview()
-        }
+        container.clearContent()
 
-        contentStack.addArrangedSubview(makeHeroBanner(feed.hero))
+        container.contentStack.addArrangedSubview(makeHeroBanner(feed.hero))
 
         if feed.isEmpty {
-            contentStack.addArrangedSubview(makeEmptyNotice())
+            container.contentStack.addArrangedSubview(makeEmptyNotice())
         } else {
             if !feed.newGames.isEmpty {
-                contentStack.addArrangedSubview(makeCarousel(title: newGamesTitle, games: feed.newGames))
+                container.contentStack.addArrangedSubview(makeCarousel(title: newGamesTitle, games: feed.newGames))
             }
             if !feed.popular.isEmpty {
-                contentStack.addArrangedSubview(makeCarousel(title: popularTitle, games: feed.popular))
+                container.contentStack.addArrangedSubview(makeCarousel(title: popularTitle, games: feed.popular))
             }
         }
 
-        contentStack.addArrangedSubview(makeSubscriptionBanner())
+        container.contentStack.addArrangedSubview(makeSubscriptionBanner())
     }
 
     private func makeHeroBanner(_ hero: ArcadeHero) -> UIView {
@@ -197,11 +157,9 @@ final class ArcadeViewController: UIViewController {
     // MARK: - Helpers
 
     private func makeHeader(title: String) -> UIView {
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = AppFont.bold(.title2)
-        titleLabel.textColor = AppColors.label
-        return wrapInMargins(titleLabel)
+        let header = SectionHeaderView()
+        header.configure(title: title)
+        return wrapInMargins(header)
     }
 
     private func wrapInMargins(_ content: UIView) -> UIView {

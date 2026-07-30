@@ -23,15 +23,29 @@ import Arcade
 /// Composition Root. DI 구성 + 피처 Builder 조립 + 탭 구성.
 struct AppComposition {
 
-    /// DI 컨테이너 구성. Core 구현체 등록.
+    /// 탭 하나의 명세(타이틀 + SF Symbol + 루트 뷰컨트롤러).
+    private struct TabSpec {
+        let title: String
+        let symbol: String
+        let root: UIViewController
+    }
+
+    /// 조립된 피처 Builder 묶음.
+    private struct Builders {
+        let today: DefaultTodayBuilder
+        let games: DefaultGamesBuilder
+        let apps: DefaultAppsBuilder
+        let arcade: DefaultArcadeBuilder
+        let search: DefaultSearchBuilder
+    }
+
+    /// DI 컨테이너 구성. 실제로 resolve 되는 Core 구현체만 등록한다.
+    /// StoreConfig / NetworkClient 는 iTunesClient 조립에만 쓰이므로 로컬 값으로 유지한다.
     private func makeContainer() -> DIContainer {
         let container = DIContainer()
 
         let config = StoreConfig.korea
-        container.register(StoreConfig.self) { config }
-
         let networkClient: NetworkClient = URLSessionNetworkClient()
-        container.register(NetworkClient.self) { networkClient }
 
         let iTunesClient: ITunesClient = DefaultITunesClient(network: networkClient, config: config)
         container.register(ITunesClient.self) { iTunesClient }
@@ -49,9 +63,7 @@ struct AppComposition {
     }
 
     @MainActor
-    func makeRootTabBarController() -> UITabBarController {
-        let container = makeContainer()
-
+    private func makeBuilders(from container: DIContainer) -> Builders {
         let iTunesClient = container.resolve(ITunesClient.self)
         let cache = container.resolve(Cache.self)
         let imageLoader = container.resolve(ImageLoading.self)
@@ -68,44 +80,52 @@ struct AppComposition {
             appDetail: appDetailBuilder
         )
 
-        let todayBuilder = DefaultTodayBuilder(
-            iTunesClient: iTunesClient,
-            imageLoader: imageLoader,
-            appDetail: appDetailBuilder
+        return Builders(
+            today: DefaultTodayBuilder(
+                iTunesClient: iTunesClient,
+                imageLoader: imageLoader,
+                appDetail: appDetailBuilder
+            ),
+            games: DefaultGamesBuilder(
+                iTunesClient: iTunesClient,
+                imageLoader: imageLoader,
+                appDetail: appDetailBuilder,
+                seeAll: seeAllBuilder
+            ),
+            apps: DefaultAppsBuilder(
+                iTunesClient: iTunesClient,
+                imageLoader: imageLoader,
+                appDetail: appDetailBuilder,
+                seeAll: seeAllBuilder
+            ),
+            arcade: DefaultArcadeBuilder(
+                iTunesClient: iTunesClient,
+                imageLoader: imageLoader,
+                appDetail: appDetailBuilder
+            ),
+            search: DefaultSearchBuilder(
+                iTunesClient: iTunesClient,
+                recentSearchStore: recentSearchStore,
+                imageLoader: imageLoader,
+                appDetail: appDetailBuilder
+            )
         )
-        let gamesBuilder = DefaultGamesBuilder(
-            iTunesClient: iTunesClient,
-            imageLoader: imageLoader,
-            appDetail: appDetailBuilder,
-            seeAll: seeAllBuilder
-        )
-        let appsBuilder = DefaultAppsBuilder(
-            iTunesClient: iTunesClient,
-            imageLoader: imageLoader,
-            appDetail: appDetailBuilder,
-            seeAll: seeAllBuilder
-        )
-        let arcadeBuilder = DefaultArcadeBuilder(
-            iTunesClient: iTunesClient,
-            imageLoader: imageLoader,
-            appDetail: appDetailBuilder
-        )
-        let searchBuilder = DefaultSearchBuilder(
-            iTunesClient: iTunesClient,
-            recentSearchStore: recentSearchStore,
-            imageLoader: imageLoader,
-            appDetail: appDetailBuilder
-        )
+    }
 
-        // 탭 순서: [Today | Games | Apps | Arcade | Search]
-        let tabs: [(title: String, symbol: String, root: UIViewController)] = [
-            ("투데이", "doc.text.image", todayBuilder.build()),
-            ("게임", "gamecontroller", gamesBuilder.build()),
-            ("앱", "square.stack.3d.up", appsBuilder.build()),
-            ("아케이드", "arcade.stick", arcadeBuilder.build()),
-            ("검색", "magnifyingglass", searchBuilder.build()),
+    /// 탭 순서: [Today | Games | Apps | Arcade | Search]
+    @MainActor
+    private func makeTabs(from builders: Builders) -> [TabSpec] {
+        [
+            TabSpec(title: "투데이", symbol: "doc.text.image", root: builders.today.build()),
+            TabSpec(title: "게임", symbol: "gamecontroller", root: builders.games.build()),
+            TabSpec(title: "앱", symbol: "square.stack.3d.up", root: builders.apps.build()),
+            TabSpec(title: "아케이드", symbol: "arcade.stick", root: builders.arcade.build()),
+            TabSpec(title: "검색", symbol: "magnifyingglass", root: builders.search.build()),
         ]
+    }
 
+    @MainActor
+    private func makeTabBar(tabs: [TabSpec]) -> UITabBarController {
         let controllers = tabs.map { tab -> UIViewController in
             let nav = UINavigationController(rootViewController: tab.root)
             nav.tabBarItem = UITabBarItem(
@@ -126,5 +146,13 @@ struct AppComposition {
             tabBar.selectedIndex = requestedTab
         }
         return tabBar
+    }
+
+    @MainActor
+    func makeRootTabBarController() -> UITabBarController {
+        let container = makeContainer()
+        let builders = makeBuilders(from: container)
+        let tabs = makeTabs(from: builders)
+        return makeTabBar(tabs: tabs)
     }
 }
