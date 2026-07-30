@@ -63,6 +63,21 @@ struct DefaultAppDetailRepositoryTests {
         #expect(client.lookupCallCount == 1)
     }
 
+    @Test("손상 캐시(디코드 실패)는 제거 후 네트워크 폴백")
+    func corruptedCacheIsRemovedAndFallsBack() async throws {
+        let seed = [cacheKey: Data("not-json".utf8)]
+        let cache = MockCache(seed: seed)
+        let dto = try TestSupport.lookupDTO(id: 42)
+        let client = MockITunesClient(lookupResult: [dto])
+        let repo = DefaultAppDetailRepository(client: client, cache: cache)
+
+        let detail = try await repo.fetch(appID: 42)
+        #expect(detail.name == "App 42")
+        #expect(cache.removedKeys == [cacheKey])
+        #expect(client.lookupCallCount == 1)
+        #expect(cache.storedKeys == [cacheKey])
+    }
+
     @Test("Lookup 결과 0건이면 notFound")
     func emptyLookupThrowsNotFound() async {
         let cache = MockCache()

@@ -91,8 +91,7 @@ final class TodayAppRowView: UIView {
 
     func configure(with app: TodayAppSummary, loader: ImageLoading) {
         appID = app.id
-        iconView.configure(loader: loader)
-        iconView.setImage(url: app.iconURL)
+        iconView.setImage(url: app.iconURL, loader: loader)
         nameLabel.text = app.name
         genreLabel.text = app.genre
         getButton.configure(title: app.priceText)

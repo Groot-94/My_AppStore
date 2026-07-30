@@ -156,8 +156,7 @@ final class AppDetailViewController: UIViewController {
 
     private func makeHeader(_ model: AppDetailPresentation) -> UIView {
         let icon = AppIconView(cornerRadius: 20)
-        icon.configure(loader: imageLoader)
-        icon.setImage(url: model.iconURL)
+        icon.setImage(url: model.iconURL, loader: imageLoader)
         icon.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             icon.widthAnchor.constraint(equalToConstant: 96),

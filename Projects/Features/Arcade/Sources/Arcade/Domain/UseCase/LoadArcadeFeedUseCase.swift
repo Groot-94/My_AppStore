@@ -32,7 +32,9 @@ public struct DefaultLoadArcadeFeedUseCase: LoadArcadeFeedUseCase {
             return ArcadeFeed(hero: curation.hero, newGames: [], popular: [])
         }
 
-        let games = try await repository.games(ids: allIDs)
+        // 정적 히어로는 항상 노출한다. lookup 실패는 전체 실패로 올리지 않고
+        // 빈 섹션으로 흡수한다(Apps/Games 의 부분 실패 정책과 정렬).
+        let games = (try? await repository.games(ids: allIDs)) ?? []
         let byID = Dictionary(games.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 
         return ArcadeFeed(

@@ -20,7 +20,7 @@ struct SearchViewModelTests {
         let repo = MockSearchRepository(outcome: outcome)
         let recentStore = MockRecentSearches(terms: recents)
         let useCase = DefaultSearchAppsUseCase(repository: repo, recentSearches: recentStore)
-        let viewModel = SearchViewModel(useCase: useCase, recentSearches: recentStore)
+        let viewModel = SearchViewModel(useCase: useCase)
         return (viewModel, repo, recentStore)
     }
 
@@ -69,14 +69,15 @@ struct SearchViewModelTests {
         repo.set(.delayed([TestSupport.item(id: 99, name: "stale")], 500_000_000))
         let first = Task { await viewModel.search(term: "slow") }
 
-        // 잠깐 양보해 첫 Task 가 loading 진입하도록.
-        await Task.yield()
+        // 게이트로 첫 요청이 search() 에 실제 진입했음을 보장(스케줄링 무관 결정화).
+        await repo.waitForFirstEntry()
 
         repo.set(.success([TestSupport.item(id: 1, name: "fresh")]))
         await viewModel.search(term: "fast")
         _ = await first.value
 
-        // 최신(fast) 결과만 반영, 취소된 stale 은 무시.
+        // 두 요청 모두 진입했고(순서 고정), 최신(fast) 결과만 반영, 취소된 stale 은 무시.
+        #expect(repo.receivedTerms == ["slow", "fast"])
         #expect(viewModel.state == .loaded([TestSupport.item(id: 1, name: "fresh")]))
     }
 

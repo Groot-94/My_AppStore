@@ -28,17 +28,15 @@ public final class SearchViewModel {
     public private(set) var state: State
 
     private let useCase: SearchAppsUseCase
-    private let recentSearches: RecentSearching
 
     /// 진행 중인 검색 Task(연속 검색 시 취소용).
     @ObservationIgnored private var searchTask: Task<Void, Never>?
     /// 재시도용 직전 검색어.
     @ObservationIgnored private var lastTerm: String?
 
-    public init(useCase: SearchAppsUseCase, recentSearches: RecentSearching) {
+    public init(useCase: SearchAppsUseCase) {
         self.useCase = useCase
-        self.recentSearches = recentSearches
-        self.state = .idle(recentSearches.recentTerms())
+        self.state = .idle(useCase.recentTerms())
     }
 
     /// 검색 실행(Return/검색 버튼). 빈/공백은 무시하고 idle 유지.
@@ -98,7 +96,7 @@ public final class SearchViewModel {
 
     /// 최근 검색어 비우기 → idle([]).
     public func clearRecents() {
-        recentSearches.clear()
+        useCase.clearRecents()
         state = .idle([])
     }
 
@@ -111,6 +109,6 @@ public final class SearchViewModel {
     }
 
     private func refreshIdle() {
-        state = .idle(recentSearches.recentTerms())
+        state = .idle(useCase.recentTerms())
     }
 }

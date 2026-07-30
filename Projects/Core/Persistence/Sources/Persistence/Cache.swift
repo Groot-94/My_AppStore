@@ -40,6 +40,7 @@ public final class DefaultCache: Cache, @unchecked Sendable {
     private let memory = NSCache<NSString, Entry>()
     private let directory: URL
     private let defaultTTL: TimeInterval
+    private let maxDiskBytes: Int
     private let fileManager = FileManager.default
     private let lock = NSLock()
 
@@ -47,15 +48,28 @@ public final class DefaultCache: Cache, @unchecked Sendable {
     ///   - name: 디스크 하위 폴더명(캐시 네임스페이스).
     ///   - defaultTTL: 기본 만료(초). 기본 1시간.
     ///   - directory: 루트 디렉터리(기본 caches).
+    ///   - maxDiskBytes: 스윕 후 디스크 총량 상한(초과 시 오래된 것부터 삭제). 기본 100MB.
+    ///   - sweepOnInit: init 시 백그라운드 만료 스윕 수행 여부. 기본 true(테스트는 false 후 직접 호출).
     public init(
         name: String = "AppStoreCache",
         defaultTTL: TimeInterval = 3600,
-        directory: URL? = nil
+        directory: URL? = nil,
+        maxDiskBytes: Int = 100 * 1024 * 1024,
+        sweepOnInit: Bool = true
     ) {
         self.defaultTTL = defaultTTL
+        self.maxDiskBytes = maxDiskBytes
         let base = directory ?? fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         self.directory = base.appendingPathComponent(name, isDirectory: true)
         try? fileManager.createDirectory(at: self.directory, withIntermediateDirectories: true)
+
+        // 일회성 키(이미지 URL 등)가 무기한 누적되지 않도록 init 시 1회 스윕.
+        // 재조회가 없어도 만료 디스크 항목을 제거하고, 총량 상한을 강제한다.
+        if sweepOnInit {
+            Task.detached(priority: .utility) { [weak self] in
+                self?.sweepExpired()
+            }
+        }
     }
 
     public func data(forKey key: String) -> Data? {
@@ -113,6 +127,60 @@ public final class DefaultCache: Cache, @unchecked Sendable {
         defer { lock.unlock() }
         try? fileManager.removeItem(at: directory)
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+    }
+
+    // MARK: - 스윕
+
+    /// 스윕 중 생존 항목의 메타데이터.
+    private struct Survivor {
+        let base: String
+        let expiry: Date
+        let size: Int
+    }
+
+    /// 디스크 디렉터리를 1회 순회해 만료 항목(.meta 기준)을 삭제하고, 남은 총량이
+    /// 상한을 넘으면 오래된(만료 임박) 순으로 추가 삭제한다. init 스윕/테스트가 직접 호출.
+    /// 디스크 상태만 정리하며 메모리 캐시는 건드리지 않는다(만료 항목은 조회 시 걸러짐).
+    func sweepExpired(now: Date = Date()) {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard let names = try? fileManager.contentsOfDirectory(atPath: directory.path) else { return }
+        // .meta 를 가진 항목만 유효한 캐시 엔트리로 간주한다.
+        let metaNames = names.filter { $0.hasSuffix(".meta") }
+
+        var survivors: [Survivor] = []
+        for metaName in metaNames {
+            let base = String(metaName.dropLast(".meta".count))
+            let fileURL = directory.appendingPathComponent(base, isDirectory: false)
+            let metaURL = directory.appendingPathComponent(metaName, isDirectory: false)
+
+            guard let expiry = readExpiry(metaURL) else {
+                // 손상된 meta: 짝 파일과 함께 제거.
+                try? fileManager.removeItem(at: fileURL)
+                try? fileManager.removeItem(at: metaURL)
+                continue
+            }
+            if expiry <= now {
+                try? fileManager.removeItem(at: fileURL)
+                try? fileManager.removeItem(at: metaURL)
+                continue
+            }
+            let size = ((try? fileManager.attributesOfItem(atPath: fileURL.path))?[.size] as? Int) ?? 0
+            survivors.append(Survivor(base: base, expiry: expiry, size: size))
+        }
+
+        // 총량 상한 강제: 만료가 가까운(오래 산) 순으로 삭제해 상한 이하로 낮춘다.
+        var total = survivors.reduce(0) { $0 + $1.size }
+        guard total > maxDiskBytes else { return }
+        for entry in survivors.sorted(by: { $0.expiry < $1.expiry }) {
+            if total <= maxDiskBytes { break }
+            let fileURL = directory.appendingPathComponent(entry.base, isDirectory: false)
+            let metaURL = directory.appendingPathComponent("\(entry.base).meta", isDirectory: false)
+            try? fileManager.removeItem(at: fileURL)
+            try? fileManager.removeItem(at: metaURL)
+            total -= entry.size
+        }
     }
 
     // MARK: - 내부

@@ -221,10 +221,10 @@ extension SearchViewController: UITableViewDataSource, UITableViewDelegate {
             let cell = tableView.dequeueReusableCell(withIdentifier: AppRowCell.reuseID, for: indexPath)
             guard let rowCell = cell as? AppRowCell else { return cell }
             let item = displayedResults[indexPath.row]
-            rowCell.configure(with: model(for: item), loader: imageLoader)
+            rowCell.configure(with: Self.model(for: item), loader: imageLoader)
             // 받기 버튼: UI 변화만(다운로드 없음).
             rowCell.onGetTapped = { [weak rowCell] in
-                rowCell?.configure(with: Self.gotModel(from: item), loader: nil)
+                rowCell?.configure(with: Self.model(for: item, actionTitle: CommonStrings.Action.open), loader: nil)
             }
             return rowCell
         }
@@ -273,25 +273,17 @@ extension SearchViewController: UITableViewDataSource, UITableViewDelegate {
         return container
     }
 
-    private func model(for item: SearchResultItem) -> AppRowCell.Model {
+    private static func model(
+        for item: SearchResultItem,
+        actionTitle: String? = nil
+    ) -> AppRowCell.Model {
         AppRowCell.Model(
             iconURL: item.iconURL,
             title: item.name,
             subtitle: item.genre.isEmpty ? item.sellerName : item.genre,
             rating: item.rating > 0 ? item.rating : nil,
             ratingCount: item.ratingCount > 0 ? item.ratingCount : nil,
-            actionTitle: item.price ?? CommonStrings.Price.free
-        )
-    }
-
-    private static func gotModel(from item: SearchResultItem) -> AppRowCell.Model {
-        AppRowCell.Model(
-            iconURL: item.iconURL,
-            title: item.name,
-            subtitle: item.genre.isEmpty ? item.sellerName : item.genre,
-            rating: item.rating > 0 ? item.rating : nil,
-            ratingCount: item.ratingCount > 0 ? item.ratingCount : nil,
-            actionTitle: CommonStrings.Action.open
+            actionTitle: actionTitle ?? item.price ?? CommonStrings.Price.free
         )
     }
 }

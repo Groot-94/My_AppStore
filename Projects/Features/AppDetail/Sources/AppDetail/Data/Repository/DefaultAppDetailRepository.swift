@@ -25,9 +25,12 @@ public struct DefaultAppDetailRepository: AppDetailRepository {
     public func fetch(appID: Int) async throws -> AppDetail {
         let key = Self.cacheKey(appID: appID)
 
-        if let cached = cache.data(forKey: key),
-           let dto = try? JSONDecoder().decode(AppDetailCacheDTO.self, from: cached) {
-            return AppDetailMapper.map(dto)
+        if let cached = cache.data(forKey: key) {
+            if let dto = try? JSONDecoder().decode(AppDetailCacheDTO.self, from: cached) {
+                return AppDetailMapper.map(dto)
+            }
+            // 손상된 캐시(디코드 실패)는 제거하고 네트워크로 폴백한다.
+            cache.removeValue(forKey: key)
         }
 
         let dtos = try await client.lookup(ids: [appID])

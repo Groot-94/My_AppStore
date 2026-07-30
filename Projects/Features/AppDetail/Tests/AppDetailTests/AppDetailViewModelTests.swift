@@ -73,4 +73,25 @@ struct AppDetailViewModelTests {
         await viewModel.load()
         #expect(repo.receivedIDs == [42, 42])
     }
+
+    @Test("실패→retry 성공 시 loaded 로 회복(retryable 리셋)")
+    func retryRecoversToLoaded() async {
+        let now = Date(timeIntervalSince1970: 0)
+        let detail = TestSupport.detail(id: 42, name: "카카오톡")
+        let repo = MockAppDetailRepository(outcome: .failure)
+        let useCase = DefaultLoadAppDetailUseCase(repository: repo)
+        let viewModel = AppDetailViewModel(appID: 42, useCase: useCase, now: now)
+
+        await viewModel.load()
+        guard case let .failed(_, retryable) = viewModel.state, retryable else {
+            Issue.record("expected retryable failed, got \(viewModel.state)")
+            return
+        }
+
+        // 네트워크 회복 후 재시도 → loaded 도달, failed 잔여 없음.
+        repo.set(.success(detail))
+        await viewModel.load()
+        #expect(viewModel.state == .loaded(AppDetailPresentation(detail: detail, now: now)))
+        #expect(repo.receivedIDs == [42, 42])
+    }
 }

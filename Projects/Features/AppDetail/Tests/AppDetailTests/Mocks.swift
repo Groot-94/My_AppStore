@@ -27,6 +27,10 @@ final class MockAppDetailRepository: AppDetailRepository, @unchecked Sendable {
         self._outcome = outcome
     }
 
+    func set(_ outcome: Outcome) {
+        lock.withLock { _outcome = outcome }
+    }
+
     func fetch(appID: Int) async throws -> AppDetail {
         let outcome: Outcome = lock.withLock {
             receivedIDs.append(appID)
@@ -46,6 +50,7 @@ final class MockCache: Cache, @unchecked Sendable {
     private var storage: [String: Data]
     private(set) var readKeys: [String] = []
     private(set) var storedKeys: [String] = []
+    private(set) var removedKeys: [String] = []
 
     init(seed: [String: Data] = [:]) {
         self.storage = seed
@@ -66,7 +71,10 @@ final class MockCache: Cache, @unchecked Sendable {
     }
 
     func removeValue(forKey key: String) {
-        lock.withLock { storage[key] = nil }
+        lock.withLock {
+            removedKeys.append(key)
+            storage[key] = nil
+        }
     }
 
     func removeAll() {

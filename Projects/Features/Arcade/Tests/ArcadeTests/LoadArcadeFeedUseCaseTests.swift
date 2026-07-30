@@ -55,14 +55,15 @@ struct LoadArcadeFeedUseCaseTests {
         }
     }
 
-    @Test("lookup 전체 실패면 throw")
-    func lookupFailureThrows() async {
+    @Test("lookup 실패면 히어로만 있는 빈 피드로 흡수(전체 실패 아님)")
+    func lookupFailureYieldsHeroOnlyFeed() async throws {
         let repo = MockArcadeRepository(
             curation: TestSupport.curation(newGameIDs: [1], popularIDs: []),
             games: .failure
         )
-        await #expect(throws: Error.self) {
-            _ = try await DefaultLoadArcadeFeedUseCase(repository: repo).execute()
-        }
+        let feed = try await DefaultLoadArcadeFeedUseCase(repository: repo).execute()
+        #expect(feed.newGames.isEmpty)
+        #expect(feed.popular.isEmpty)
+        #expect(feed.hero.title == "Apple Arcade")
     }
 }

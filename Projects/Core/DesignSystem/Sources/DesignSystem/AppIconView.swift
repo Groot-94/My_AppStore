@@ -29,13 +29,9 @@ public final class AppIconView: UIImageView {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    /// 이미지 로더 주입(생성 직후 1회).
-    public func configure(loader: ImageLoading) {
-        self.loader = loader
-    }
-
-    /// URL 설정 → 비동기 로드. `nil` 이면 플레이스홀더 유지.
-    public func setImage(url: URL?) {
+    /// URL 설정 → 비동기 로드. `loader` 를 넘기면 함께 주입(원샷). `url` 이 `nil` 이면 플레이스홀더 유지.
+    public func setImage(url: URL?, loader: ImageLoading? = nil) {
+        if let loader { self.loader = loader }
         loadTask?.cancel()
         currentURL = url
         image = nil

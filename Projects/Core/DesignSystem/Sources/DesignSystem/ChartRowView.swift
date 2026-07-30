@@ -116,8 +116,7 @@ public final class ChartRowView: UIControl {
 
     public func configure(with model: Model, loader: ImageLoading?) {
         rankLabel.text = "\(model.rank)"
-        if let loader { iconView.configure(loader: loader) }
-        iconView.setImage(url: model.iconURL)
+        iconView.setImage(url: model.iconURL, loader: loader)
         titleLabel.text = model.title
         subtitleLabel.text = model.subtitle
         if let actionTitle = model.actionTitle {

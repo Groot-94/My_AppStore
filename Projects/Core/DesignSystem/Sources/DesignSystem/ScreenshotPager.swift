@@ -67,8 +67,7 @@ extension ScreenshotPager: UICollectionViewDataSource {
             for: indexPath
         )
         if let cell = cell as? ScreenshotCell {
-            if let loader { cell.configure(loader: loader) }
-            cell.setImage(url: urls[indexPath.item])
+            cell.setImage(url: urls[indexPath.item], loader: loader)
         }
         return cell
     }
@@ -106,8 +105,7 @@ final class ScreenshotCell: UICollectionViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    func configure(loader: ImageLoading) { imageView.configure(loader: loader) }
-    func setImage(url: URL?) { imageView.setImage(url: url) }
+    func setImage(url: URL?, loader: ImageLoading? = nil) { imageView.setImage(url: url, loader: loader) }
 
     override func prepareForReuse() {
         super.prepareForReuse()

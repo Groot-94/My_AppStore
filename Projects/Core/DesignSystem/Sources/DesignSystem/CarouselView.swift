@@ -82,8 +82,7 @@ extension CarouselView: UICollectionViewDataSource {
             for: indexPath
         )
         if let cell = cell as? CarouselCell {
-            if let loader { cell.configure(loader: loader) }
-            cell.configure(with: items[indexPath.item])
+            cell.configure(with: items[indexPath.item], loader: loader)
         }
         return cell
     }
@@ -138,12 +137,10 @@ final class CarouselCell: UICollectionViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    func configure(loader: ImageLoading) { imageView.configure(loader: loader) }
-
-    func configure(with item: CarouselView.Item) {
+    func configure(with item: CarouselView.Item, loader: ImageLoading?) {
         subtitleLabel.text = item.subtitle.uppercased()
         titleLabel.text = item.title
-        imageView.setImage(url: item.imageURL)
+        imageView.setImage(url: item.imageURL, loader: loader)
     }
 
     override func prepareForReuse() {

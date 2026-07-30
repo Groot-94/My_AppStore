@@ -102,8 +102,7 @@ public final class AppRowCell: UITableViewCell {
 
     /// 셀 구성. 이미지 로더는 별도 주입(재사용 성능).
     public func configure(with model: Model, loader: ImageLoading?) {
-        if let loader { iconView.configure(loader: loader) }
-        iconView.setImage(url: model.iconURL)
+        iconView.setImage(url: model.iconURL, loader: loader)
         titleLabel.text = model.title
         subtitleLabel.text = model.subtitle
 

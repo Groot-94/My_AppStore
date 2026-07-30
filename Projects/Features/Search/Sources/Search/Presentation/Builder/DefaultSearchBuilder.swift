@@ -36,7 +36,7 @@ public struct DefaultSearchBuilder: SearchBuilder {
         let repository = DefaultSearchRepository(client: iTunesClient)
         let recentSearches = RecentSearchStoreAdapter(store: recentSearchStore)
         let useCase = DefaultSearchAppsUseCase(repository: repository, recentSearches: recentSearches)
-        let viewModel = SearchViewModel(useCase: useCase, recentSearches: recentSearches)
+        let viewModel = SearchViewModel(useCase: useCase)
 
         let viewController = SearchViewController(viewModel: viewModel, imageLoader: imageLoader)
         // 결과 행 탭 → AppDetail push. Search 는 AppDetail 구현을 모른다(계약만).
