@@ -9,6 +9,7 @@ public extension TargetDependency {
     static let networking: TargetDependency = .project(target: "Networking", path: .relativeToRoot("Projects/Core/Networking"))
     static let persistence: TargetDependency = .project(target: "Persistence", path: .relativeToRoot("Projects/Core/Persistence"))
     static let iTunesKit: TargetDependency = .project(target: "ITunesKit", path: .relativeToRoot("Projects/Core/ITunesKit"))
+    static let iTunesKitTesting: TargetDependency = .project(target: "ITunesKitTesting", path: .relativeToRoot("Projects/Core/ITunesKit"))
     static let designSystem: TargetDependency = .project(target: "DesignSystem", path: .relativeToRoot("Projects/Core/DesignSystem"))
 
     /// 타 피처의 Interface 타깃 참조(피처 → 피처는 Interface만 허용).
@@ -38,7 +39,7 @@ public extension Project {
     ///   - testDependencies: 테스트 타깃의 추가 의존(피검증 Core 모듈 등). Impl 은 자동 주입.
     ///   - testHasResources: 테스트 픽스처(`Tests/XxxTests/Fixtures/**`) 포함 여부.
     ///   - testing: `true` 면 `XxxTesting`(계약 Mock) 프레임워크 생성 — 자기 Interface 에만 의존.
-    ///   - example: `true` 면 `XxxExample` 데모 앱 + `XxxExample-Mock` 스킴(`-useMocks` 인자) 생성.
+    ///   - example: `true` 면 `XxxExample` 데모 앱 + 단일 스킴(항상 오프라인 스텁) 생성.
     ///   - exampleDependencies: Example 앱의 추가 의존(타 피처 `*Testing` 등). Impl/DesignSystem/Core 는 자동 주입.
     static func feature(
         name: String,
@@ -91,19 +92,17 @@ public extension Project {
         }
 
         if example {
-            // Example: 자기 Impl + DesignSystem + Core 실구현 + (타 피처) Testing.
+            // Example: 자기 Impl(전이로 DesignSystem/CoreKit/ITunesKit 확보) + 로컬 인프라(Persistence)
+            //          + 오프라인 네트워크 스텁(ITunesKitTesting) + (타 피처) Testing.
             let exampleTarget = Target.app(
                 name: "\(name)Example",
                 bundleId: "\(Constants.bundleIDPrefix).example.\(name.lowercased())",
                 dependencies: [
                     .target(name: name),
-                    .designSystem,
-                    .coreKit,
-                    .networking,
                     .persistence,
-                    .iTunesKit,
+                    .iTunesKitTesting,
                 ] + exampleDependencies,
-                hasResources: true
+                hasResources: false
             )
             targets.append(exampleTarget)
         }
@@ -113,8 +112,7 @@ public extension Project {
         var schemes: [Scheme] = []
         if example {
             schemes.append(.featureDefault(name: name, hasTests: tests))
-            schemes.append(.exampleReal(name: name))
-            schemes.append(.exampleMock(name: name))
+            schemes.append(.exampleApp(name: name))
         }
 
         return .project(
@@ -155,31 +153,14 @@ public extension Scheme {
         )
     }
 
-    /// `XxxExample` 스킴. 실 API 로 피처 단독 확인(런치 인자 없음).
-    static func exampleReal(name: String) -> Scheme {
+    /// `XxxExample` 스킴. 오프라인 픽스처 스텁으로 피처 단독 확인(런치 인자 없음).
+    static func exampleApp(name: String) -> Scheme {
         let target = TargetReference.target("\(name)Example")
         return .scheme(
             name: "\(name)Example",
             shared: true,
             buildAction: .buildAction(targets: [target]),
             runAction: .runAction(configuration: "Debug", executable: target)
-        )
-    }
-
-    /// `XxxExample-Mock` 스킴. `-useMocks` 실행 인자를 켜 번들 픽스처 스텁으로 네트워크 없이 구동한다.
-    static func exampleMock(name: String) -> Scheme {
-        let target = TargetReference.target("\(name)Example")
-        return .scheme(
-            name: "\(name)Example-Mock",
-            shared: true,
-            buildAction: .buildAction(targets: [target]),
-            runAction: .runAction(
-                configuration: "Debug",
-                executable: target,
-                arguments: .arguments(launchArguments: [
-                    .launchArgument(name: "-useMocks", isEnabled: true)
-                ])
-            )
         )
     }
 }

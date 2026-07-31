@@ -18,6 +18,11 @@ let project = Project.project(
                 .networking,
             ]
         ),
+        .framework(
+            name: "ITunesKitTesting",
+            dependencies: [.target(name: "ITunesKit")],
+            hasResources: true
+        ),
         .unitTest(
             name: "ITunesKitTests",
             dependencies: [
