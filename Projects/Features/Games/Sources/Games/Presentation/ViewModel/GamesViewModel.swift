@@ -7,7 +7,7 @@
 
 import Foundation
 import Observation
-import DesignSystem
+import CoreKit
 
 /// Games 탭 ViewModel. UI 프레임워크 비의존(@Observable + @MainActor).
 ///

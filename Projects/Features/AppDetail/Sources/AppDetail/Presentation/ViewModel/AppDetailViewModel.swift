@@ -8,7 +8,6 @@
 import Foundation
 import Observation
 import CoreKit
-import DesignSystem
 
 /// 앱 상세 화면 ViewModel. UI 프레임워크 비의존(@Observable + @MainActor).
 ///

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import DesignSystem
+import CoreKit
 
 /// `AppDetail` 엔티티를 화면 표시 문자열로 변환한 뷰용 구성 모델.
 ///

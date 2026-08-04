@@ -1,6 +1,6 @@
 //
 //  CommonStrings.swift
-//  DesignSystem
+//  CoreKit
 //
 //  Created by groot on 7/30/26.
 //

@@ -7,7 +7,7 @@
 
 import Foundation
 import Observation
-import DesignSystem
+import CoreKit
 import SeeAllInterface
 
 /// 차트 전체 목록 ViewModel. UI 프레임워크 비의존(@Observable + @MainActor).
