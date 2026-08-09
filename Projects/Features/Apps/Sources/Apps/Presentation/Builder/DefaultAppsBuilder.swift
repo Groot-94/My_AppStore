@@ -14,13 +14,13 @@ import CoreKit
 
 /// Apps 구현 Builder. Core 인프라 + AppDetail/SeeAll 계약을 주입받아 조립한다.
 public struct DefaultAppsBuilder: AppsBuilder {
-    private let iTunesClient: ITunesClient
+    private let iTunesClient: AppLookup & ChartFeeding
     private let imageLoader: ImageLoading
     private let appDetail: AppDetailBuilder
     private let seeAll: SeeAllBuilder
 
     public init(
-        iTunesClient: ITunesClient,
+        iTunesClient: AppLookup & ChartFeeding,
         imageLoader: ImageLoading,
         appDetail: AppDetailBuilder,
         seeAll: SeeAllBuilder

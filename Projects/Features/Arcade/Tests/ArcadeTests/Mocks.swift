@@ -39,8 +39,8 @@ actor MockArcadeRepository: ArcadeRepository {
     }
 }
 
-/// lookup 응답을 주입하는 `ITunesClient` 목.
-actor MockITunesClient: ITunesClient {
+/// lookup 응답을 주입하는 `AppLookup` 목.
+actor MockITunesClient: AppLookup {
     private let lookupResult: [ITunesAppDTO]
     private(set) var lookupIDs: [Int] = []
 
@@ -48,14 +48,10 @@ actor MockITunesClient: ITunesClient {
         self.lookupResult = lookupResult
     }
 
-    func search(term: String, genreID: Int?, limit: Int) async throws -> [ITunesAppDTO] { [] }
-
     func lookup(ids: [Int]) async throws -> [ITunesAppDTO] {
         lookupIDs.append(contentsOf: ids)
         return lookupResult
     }
-
-    func chart(_ feed: ChartFeed, limit: Int) async throws -> [RSSEntryDTO] { [] }
 }
 
 enum MockError: Error { case network }

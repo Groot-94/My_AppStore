@@ -14,10 +14,10 @@ import Persistence
 ///
 /// 캐시에는 상세 DTO 를 JSON `Data` 로 저장한다(TTL 은 Cache 기본).
 public struct DefaultAppDetailRepository: AppDetailRepository {
-    private let client: ITunesClient
+    private let client: AppLookup
     private let cache: Cache
 
-    public init(client: ITunesClient, cache: Cache) {
+    public init(client: AppLookup, cache: Cache) {
         self.client = client
         self.cache = cache
     }

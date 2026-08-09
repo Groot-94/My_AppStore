@@ -13,11 +13,11 @@ import CoreKit
 
 /// SeeAll 구현 Builder. Core 인프라 + AppDetail 계약을 주입받아 조립한다.
 public struct DefaultSeeAllBuilder: SeeAllBuilder {
-    private let iTunesClient: ITunesClient
+    private let iTunesClient: ChartFeeding
     private let imageLoader: ImageLoading
     private let appDetail: AppDetailBuilder
 
-    public init(iTunesClient: ITunesClient, imageLoader: ImageLoading, appDetail: AppDetailBuilder) {
+    public init(iTunesClient: ChartFeeding, imageLoader: ImageLoading, appDetail: AppDetailBuilder) {
         self.iTunesClient = iTunesClient
         self.imageLoader = imageLoader
         self.appDetail = appDetail
