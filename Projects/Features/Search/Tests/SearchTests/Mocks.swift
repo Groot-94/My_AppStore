@@ -90,8 +90,8 @@ actor MockRecentSearches: RecentSearching {
 
 enum MockError: Error { case network }
 
-/// search 응답을 주입하는 `ITunesClient` 목. 전달된 term/genreID/limit 을 기록.
-actor MockITunesClient: ITunesClient {
+/// search 응답을 주입하는 `AppSearching` 목. 전달된 term/genreID/limit 을 기록.
+actor MockITunesClient: AppSearching {
     private let dtos: [ITunesAppDTO]
     private(set) var receivedTerm: String?
     private(set) var receivedGenreID: Int??
@@ -107,8 +107,6 @@ actor MockITunesClient: ITunesClient {
         receivedLimit = limit
         return dtos
     }
-    func lookup(ids: [Int]) async throws -> [ITunesAppDTO] { [] }
-    func chart(_ feed: ChartFeed, limit: Int) async throws -> [RSSEntryDTO] { [] }
 }
 
 /// 테스트 픽스처 헬퍼.

@@ -10,9 +10,9 @@ import ITunesKit
 
 /// `SearchRepository` 기본 구현. `ITunesClient.search` 호출 후 DTO → 엔티티 매핑.
 public struct DefaultSearchRepository: SearchRepository {
-    private let client: ITunesClient
+    private let client: AppSearching
 
-    public init(client: ITunesClient) {
+    public init(client: AppSearching) {
         self.client = client
     }
 

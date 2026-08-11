@@ -13,7 +13,7 @@ import Persistence
 public enum SearchSwiftUIFactory {
     @MainActor
     public static func makeView(
-        iTunesClient: ITunesClient,
+        iTunesClient: AppSearching,
         recentSearchStore: RecentSearchStore,
         imageLoader: ImageLoading,
         onSelectApp: @escaping (Int) -> Void,

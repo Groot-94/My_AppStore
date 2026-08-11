@@ -55,8 +55,8 @@ final class MockAppsRepository: AppsRepository, @unchecked Sendable {
     }
 }
 
-/// chart/lookup 응답을 주입하는 `ITunesClient` 목.
-actor MockITunesClient: ITunesClient {
+/// chart/lookup 응답을 주입하는 목. Apps 는 두 계약을 모두 쓴다.
+actor MockITunesClient: AppLookup & ChartFeeding {
     private let chartEntries: [RSSEntryDTO]
     private let lookupResult: [ITunesAppDTO]
     private(set) var lookupIDs: [Int] = []
@@ -65,8 +65,6 @@ actor MockITunesClient: ITunesClient {
         self.chartEntries = chartEntries
         self.lookupResult = lookupResult
     }
-
-    func search(term: String, genreID: Int?, limit: Int) async throws -> [ITunesAppDTO] { [] }
 
     func lookup(ids: [Int]) async throws -> [ITunesAppDTO] {
         lookupIDs.append(contentsOf: ids)

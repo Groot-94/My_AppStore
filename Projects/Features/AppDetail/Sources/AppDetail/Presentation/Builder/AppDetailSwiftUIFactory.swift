@@ -14,7 +14,7 @@ public enum AppDetailSwiftUIFactory {
     @MainActor
     public static func makeView(
         appID: Int,
-        iTunesClient: ITunesClient,
+        iTunesClient: AppLookup,
         cache: Cache,
         imageLoader: ImageLoading
     ) -> AppDetailView {

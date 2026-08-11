@@ -14,13 +14,13 @@ import Persistence
 
 /// Search 구현 Builder. Core 인프라 + AppDetail 계약을 주입받아 조립한다.
 public struct DefaultSearchBuilder: SearchBuilder {
-    private let iTunesClient: ITunesClient
+    private let iTunesClient: AppSearching
     private let recentSearchStore: RecentSearchStore
     private let imageLoader: ImageLoading
     private let appDetail: AppDetailBuilder
 
     public init(
-        iTunesClient: ITunesClient,
+        iTunesClient: AppSearching,
         recentSearchStore: RecentSearchStore,
         imageLoader: ImageLoading,
         appDetail: AppDetailBuilder

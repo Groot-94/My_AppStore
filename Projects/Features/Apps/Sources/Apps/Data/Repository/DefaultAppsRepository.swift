@@ -10,10 +10,10 @@ import ITunesKit
 
 /// `AppsRepository` 기본 구현. RSS 차트 + Lookup 배치를 호출하고 DTO 를 엔티티로 매핑한다.
 public struct DefaultAppsRepository: AppsRepository {
-    private let client: ITunesClient
+    private let client: AppLookup & ChartFeeding
     private let bundle: Bundle
 
-    public init(client: ITunesClient, bundle: Bundle? = nil) {
+    public init(client: AppLookup & ChartFeeding, bundle: Bundle? = nil) {
         self.client = client
         self.bundle = bundle ?? .module
     }

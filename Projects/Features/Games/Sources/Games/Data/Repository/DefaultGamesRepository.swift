@@ -10,10 +10,10 @@ import ITunesKit
 
 /// `GamesRepository` 기본 구현. RSS 차트를 장르 정보 포함해 매핑하고, 추천은 Lookup 배치로 보강한다.
 public struct DefaultGamesRepository: GamesRepository {
-    private let client: ITunesClient
+    private let client: AppLookup & ChartFeeding
     private let bundle: Bundle
 
-    public init(client: ITunesClient, bundle: Bundle? = nil) {
+    public init(client: AppLookup & ChartFeeding, bundle: Bundle? = nil) {
         self.client = client
         self.bundle = bundle ?? .module
     }

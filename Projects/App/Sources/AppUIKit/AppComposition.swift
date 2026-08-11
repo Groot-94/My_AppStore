@@ -39,36 +39,19 @@ struct AppComposition {
         let search: DefaultSearchBuilder
     }
 
-    /// DI 컨테이너 구성. 실제로 resolve 되는 Core 구현체만 등록한다.
+    /// Core 인프라 + 피처 Builder 조립.
+    ///
+    /// 서비스 로케이터 없이 초기화 주입으로만 엮는다 — 등록 지점과 사용 지점이 이 함수 안에
+    /// 함께 있어 컨테이너로 얻을 게 없고, 의존 관계가 타입으로 드러난다.
     /// StoreConfig / NetworkClient 는 iTunesClient 조립에만 쓰이므로 로컬 값으로 유지한다.
     @MainActor
-    private func makeContainer() -> DIContainer {
-        let container = DIContainer()
-
+    private func makeBuilders() -> Builders {
         let config = StoreConfig.korea
         let networkClient: NetworkClient = URLSessionNetworkClient()
-
         let iTunesClient: ITunesClient = DefaultITunesClient(network: networkClient, config: config)
-        container.register(ITunesClient.self) { iTunesClient }
-
         let cache: Cache = DefaultCache()
-        container.register(Cache.self) { cache }
-
         let imageLoader: ImageLoading = DefaultImageLoader(cache: cache)
-        container.register(ImageLoading.self) { imageLoader }
-
         let recentSearchStore: RecentSearchStore = DefaultRecentSearchStore()
-        container.register(RecentSearchStore.self) { recentSearchStore }
-
-        return container
-    }
-
-    @MainActor
-    private func makeBuilders(from container: DIContainer) -> Builders {
-        let iTunesClient = container.resolve(ITunesClient.self)
-        let cache = container.resolve(Cache.self)
-        let imageLoader = container.resolve(ImageLoading.self)
-        let recentSearchStore = container.resolve(RecentSearchStore.self)
 
         let appDetailBuilder: AppDetailBuilder = DefaultAppDetailBuilder(
             iTunesClient: iTunesClient,
@@ -151,8 +134,7 @@ struct AppComposition {
 
     @MainActor
     func makeRootTabBarController() -> UITabBarController {
-        let container = makeContainer()
-        let builders = makeBuilders(from: container)
+        let builders = makeBuilders()
         let tabs = makeTabs(from: builders)
         return makeTabBar(tabs: tabs)
     }

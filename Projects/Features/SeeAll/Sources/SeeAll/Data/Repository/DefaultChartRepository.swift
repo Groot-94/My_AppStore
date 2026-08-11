@@ -11,9 +11,9 @@ import SeeAllInterface
 
 /// `ChartRepository` 기본 구현. RSS 차트를 조회해 장르 정보를 포함한 항목으로 매핑한다.
 public struct DefaultChartRepository: ChartRepository {
-    private let client: ITunesClient
+    private let client: ChartFeeding
 
-    public init(client: ITunesClient) {
+    public init(client: ChartFeeding) {
         self.client = client
     }
 

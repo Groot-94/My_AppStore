@@ -13,12 +13,12 @@ import CoreKit
 
 /// Arcade 구현 Builder. Core 인프라 + AppDetail 계약을 주입받아 조립한다.
 public struct DefaultArcadeBuilder: ArcadeBuilder {
-    private let iTunesClient: ITunesClient
+    private let iTunesClient: AppLookup
     private let imageLoader: ImageLoading
     private let appDetail: AppDetailBuilder
 
     public init(
-        iTunesClient: ITunesClient,
+        iTunesClient: AppLookup,
         imageLoader: ImageLoading,
         appDetail: AppDetailBuilder
     ) {
