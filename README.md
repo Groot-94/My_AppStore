@@ -112,12 +112,3 @@ tuist generate                            # .xcworkspace 생성 (생성물은 �
 | `Search` 등 피처명 | 피처 빌드 + 유닛 테스트 |
 | `SearchExample` | 피처 단독 데모 (실 API) |
 | `SearchExample-Mock` | 피처 단독 데모 (픽스처 데이터, 오프라인) |
-
-## 로드맵
-
-- [x] 프로젝트 골격 (Tuist 멀티 프로젝트 + 모듈 팩토리)
-- [x] Core 모듈 (Networking / ITunesKit / Persistence / DesignSystem)
-- [x] 피처 7개 (Search / AppDetail / Apps / Games / Arcade / Today / SeeAll)
-- [x] 피처별 Testing/Example 타깃
-- [ ] 다듬기 — 스켈레톤/애니메이션/접근성, 게임 탭 로드 최적화
-- [ ] SwiftUI 버전 (동일 ViewModel 재사용)
