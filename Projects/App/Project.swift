@@ -51,7 +51,7 @@ let project = Project(
                     ],
                 ],
             ]),
-            sources: ["Sources/AppUIKit/**"],
+            sources: ["Sources/AppUIKit/**", "Sources/Shared/**"],
             dependencies: appFeatureDependencies,
             settings: .appStoreBase
         ),
@@ -64,7 +64,7 @@ let project = Project(
             infoPlist: .extendingDefault(with: [
                 "UILaunchScreen": ["UIColorName": ""],
             ]),
-            sources: ["Sources/AppSwiftUI/**"],
+            sources: ["Sources/AppSwiftUI/**", "Sources/Shared/**"],
             dependencies: appFeatureDependencies,
             settings: .appStoreBase
         ),
