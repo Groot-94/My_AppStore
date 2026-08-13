@@ -1,6 +1,6 @@
 //
 //  LaunchArguments.swift
-//  AppSwiftUI
+//  App
 //
 //  Created by groot on 8/9/26.
 //

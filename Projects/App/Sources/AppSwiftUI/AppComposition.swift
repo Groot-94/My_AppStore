@@ -7,7 +7,6 @@
 
 import SwiftUI
 import AppDetail
-import AppDetailInterface
 import Search
 import SearchInterface
 
@@ -18,24 +17,17 @@ import SearchInterface
 @MainActor
 final class AppComposition {
     private let infra = AppInfra.make()
+    private lazy var factory = FlowCoordinatorFactory(infra: infra)
 
     /// 인터롭 탭의 플로우 코디네이터(=router)를 앱 수명 동안 유지한다 — UIKit VC 는 router 를 약참조.
     private var children: [Coordinator] = []
 
     func makeTabs() -> [AppTab] {
         [
-            AppTab(id: 0, title: "투데이", symbol: "doc.text.image", content: interopTab {
-                TodayFlowCoordinator(navigationController: $0, infra: infra, appDetailBuilder: makeAppDetailBuilder())
-            }),
-            AppTab(id: 1, title: "게임", symbol: "gamecontroller", content: interopTab {
-                GamesFlowCoordinator(navigationController: $0, infra: infra, appDetailBuilder: makeAppDetailBuilder())
-            }),
-            AppTab(id: 2, title: "앱", symbol: "square.stack.3d.up", content: interopTab {
-                AppsFlowCoordinator(navigationController: $0, infra: infra, appDetailBuilder: makeAppDetailBuilder())
-            }),
-            AppTab(id: 3, title: "아케이드", symbol: "arcade.stick", content: interopTab {
-                ArcadeFlowCoordinator(navigationController: $0, infra: infra, appDetailBuilder: makeAppDetailBuilder())
-            }),
+            AppTab(id: 0, title: "투데이", symbol: "doc.text.image", content: interopTab(factory.makeToday)),
+            AppTab(id: 1, title: "게임", symbol: "gamecontroller", content: interopTab(factory.makeGames)),
+            AppTab(id: 2, title: "앱", symbol: "square.stack.3d.up", content: interopTab(factory.makeApps)),
+            AppTab(id: 3, title: "아케이드", symbol: "arcade.stick", content: interopTab(factory.makeArcade)),
             AppTab(id: 4, title: "검색", symbol: "magnifyingglass", content: makeSearchTab()),
         ]
     }
@@ -89,14 +81,6 @@ final class AppComposition {
                 cache: infra.cache,
                 imageLoader: infra.imageLoader
             )
-        )
-    }
-
-    private func makeAppDetailBuilder() -> AppDetailBuilder {
-        DefaultAppDetailBuilder(
-            iTunesClient: infra.iTunesClient,
-            cache: infra.cache,
-            imageLoader: infra.imageLoader
         )
     }
 }
