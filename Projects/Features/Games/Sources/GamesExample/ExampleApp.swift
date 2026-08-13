@@ -27,6 +27,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
+    /// 스텁 router 를 소유한 Composition 을 앱 수명 동안 유지한다(VC 는 router 를 약참조).
+    private var composition: ExampleComposition?
 
     func scene(
         _ scene: UIScene,
@@ -35,7 +37,9 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     ) {
         guard let windowScene = scene as? UIWindowScene else { return }
         let window = UIWindow(windowScene: windowScene)
-        let root = ExampleComposition().makeRootViewController()
+        let composition = ExampleComposition()
+        self.composition = composition
+        let root = composition.makeRootViewController()
         window.rootViewController = UINavigationController(rootViewController: root)
         window.makeKeyAndVisible()
         self.window = window

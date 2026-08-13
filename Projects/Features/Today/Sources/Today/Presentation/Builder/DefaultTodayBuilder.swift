@@ -7,24 +7,23 @@
 
 import UIKit
 import TodayInterface
-import AppDetailInterface
 import ITunesKit
 import CoreKit
 
-/// Today 구현 Builder. Core 인프라 + AppDetail 계약을 주입받아 조립한다.
+/// Today 구현 Builder. Core 인프라 + 자기 Routing delegate 를 주입받아 조립한다.
 public struct DefaultTodayBuilder: TodayBuilder {
     private let iTunesClient: AppLookup
     private let imageLoader: ImageLoading
-    private let appDetail: AppDetailBuilder
+    private weak var router: TodayRouting?
 
     public init(
         iTunesClient: AppLookup,
         imageLoader: ImageLoading,
-        appDetail: AppDetailBuilder
+        router: TodayRouting
     ) {
         self.iTunesClient = iTunesClient
         self.imageLoader = imageLoader
-        self.appDetail = appDetail
+        self.router = router
     }
 
     @MainActor
@@ -34,11 +33,7 @@ public struct DefaultTodayBuilder: TodayBuilder {
         let viewModel = TodayViewModel(useCase: useCase)
 
         let viewController = TodayViewController(viewModel: viewModel, imageLoader: imageLoader)
-        let appDetail = appDetail
-        viewController.onSelectApp = { [weak viewController] appID in
-            guard let viewController else { return }
-            viewController.navigationController?.pushViewController(appDetail.build(appID: appID), animated: true)
-        }
+        viewController.router = router
         return viewController
     }
 }

@@ -11,7 +11,6 @@ import ProjectDescriptionHelpers
 let project = Project.feature(
     name: "Search",
     implDependencies: [
-        .featureInterface("AppDetail"),
         .persistence,
     ],
     tests: true,
@@ -22,6 +21,5 @@ let project = Project.feature(
     ],
     testHasResources: true,
     testing: true,
-    example: true,
-    exampleDependencies: [.featureTesting("AppDetail")]
+    example: true
 )

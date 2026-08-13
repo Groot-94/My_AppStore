@@ -2,7 +2,7 @@
 //  AppComposition.swift
 //  AppUIKit
 //
-//  Created by groot on 7/29/26.
+//  Created by groot on 8/13/26.
 //
 
 import UIKit
@@ -20,105 +20,122 @@ import Apps
 import Games
 import Arcade
 
-/// Composition Root. DI 구성 + 피처 Builder 조립 + 탭 구성.
-struct AppComposition {
+/// Composition Root. DI 구성 + 탭별 Coordinator 조립 + 탭 구성.
+///
+/// 각 탭은 자기 `TabCoordinator` 를 갖고, 피처에는 그 코디네이터를 `router:` 로 주입한다.
+/// 라우팅(목적지 조립·push)은 전부 코디네이터가 소유하므로 피처는 타 피처를 알지 못한다.
+@MainActor
+final class AppComposition {
 
-    /// 탭 하나의 명세(타이틀 + SF Symbol + 루트 뷰컨트롤러).
-    private struct TabSpec {
-        let title: String
-        let symbol: String
-        let root: UIViewController
+    /// Core 인프라. 앱 수명 동안 1회 생성한다.
+    private struct Infra {
+        let iTunesClient: ITunesClient
+        let cache: Cache
+        let imageLoader: ImageLoading
+        let recentSearchStore: RecentSearchStore
     }
 
-    /// 조립된 피처 Builder 묶음.
-    private struct Builders {
-        let today: DefaultTodayBuilder
-        let games: DefaultGamesBuilder
-        let apps: DefaultAppsBuilder
-        let arcade: DefaultArcadeBuilder
-        let search: DefaultSearchBuilder
-    }
+    /// 탭별 Coordinator 를 앱 수명 동안 유지한다 — 피처 VC 는 router 를 약참조하므로.
+    private var coordinators: [TabCoordinator] = []
 
-    /// Core 인프라 + 피처 Builder 조립.
-    ///
-    /// 서비스 로케이터 없이 초기화 주입으로만 엮는다 — 등록 지점과 사용 지점이 이 함수 안에
-    /// 함께 있어 컨테이너로 얻을 게 없고, 의존 관계가 타입으로 드러난다.
-    /// StoreConfig / NetworkClient 는 iTunesClient 조립에만 쓰이므로 로컬 값으로 유지한다.
-    @MainActor
-    private func makeBuilders() -> Builders {
+    // MARK: - Infra
+
+    private func makeInfra() -> Infra {
         let config = StoreConfig.korea
         let networkClient: NetworkClient = URLSessionNetworkClient()
         let iTunesClient: ITunesClient = DefaultITunesClient(network: networkClient, config: config)
         let cache: Cache = DefaultCache()
-        let imageLoader: ImageLoading = DefaultImageLoader(cache: cache)
-        let recentSearchStore: RecentSearchStore = DefaultRecentSearchStore()
-
-        let appDetailBuilder: AppDetailBuilder = DefaultAppDetailBuilder(
+        return Infra(
             iTunesClient: iTunesClient,
             cache: cache,
-            imageLoader: imageLoader
+            imageLoader: DefaultImageLoader(cache: cache),
+            recentSearchStore: DefaultRecentSearchStore()
         )
-        let seeAllBuilder: SeeAllBuilder = DefaultSeeAllBuilder(
-            iTunesClient: iTunesClient,
-            imageLoader: imageLoader,
-            appDetail: appDetailBuilder
-        )
+    }
 
-        return Builders(
-            today: DefaultTodayBuilder(
-                iTunesClient: iTunesClient,
-                imageLoader: imageLoader,
-                appDetail: appDetailBuilder
-            ),
-            games: DefaultGamesBuilder(
-                iTunesClient: iTunesClient,
-                imageLoader: imageLoader,
-                appDetail: appDetailBuilder,
-                seeAll: seeAllBuilder
-            ),
-            apps: DefaultAppsBuilder(
-                iTunesClient: iTunesClient,
-                imageLoader: imageLoader,
-                appDetail: appDetailBuilder,
-                seeAll: seeAllBuilder
-            ),
-            arcade: DefaultArcadeBuilder(
-                iTunesClient: iTunesClient,
-                imageLoader: imageLoader,
-                appDetail: appDetailBuilder
-            ),
-            search: DefaultSearchBuilder(
-                iTunesClient: iTunesClient,
-                recentSearchStore: recentSearchStore,
-                imageLoader: imageLoader,
-                appDetail: appDetailBuilder
-            )
+    /// 탭 하나의 Coordinator 생성. AppDetail 빌더 소유 + SeeAll 조립 팩토리(그 시점 router 주입) 보유.
+    private func makeCoordinator(infra: Infra) -> TabCoordinator {
+        let appDetailBuilder: AppDetailBuilder = DefaultAppDetailBuilder(
+            iTunesClient: infra.iTunesClient,
+            cache: infra.cache,
+            imageLoader: infra.imageLoader
         )
+        return TabCoordinator(
+            appDetailBuilder: appDetailBuilder,
+            makeSeeAll: { input, router in
+                DefaultSeeAllBuilder(
+                    iTunesClient: infra.iTunesClient,
+                    imageLoader: infra.imageLoader,
+                    router: router
+                ).build(input: input)
+            }
+        )
+    }
+
+    // MARK: - 탭 조립
+
+    /// 피처 루트를 만들고, 그 탭 Coordinator 에 네비게이션을 연결한 UINavigationController 반환.
+    /// `makeRoot` 는 이 탭 Coordinator 를 받아 피처 Builder 에 `router:` 로 주입한다.
+    private func makeTab(
+        title: String,
+        symbol: String,
+        infra: Infra,
+        makeRoot: (TabCoordinator) -> UIViewController
+    ) -> UINavigationController {
+        let coordinator = makeCoordinator(infra: infra)
+        coordinators.append(coordinator)
+
+        let nav = UINavigationController(rootViewController: makeRoot(coordinator))
+        nav.tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: symbol), selectedImage: nil)
+        coordinator.navigationController = nav
+        return nav
     }
 
     /// 탭 순서: [Today | Games | Apps | Arcade | Search]
-    @MainActor
-    private func makeTabs(from builders: Builders) -> [TabSpec] {
+    private func makeTabControllers(infra: Infra) -> [UINavigationController] {
         [
-            TabSpec(title: "투데이", symbol: "doc.text.image", root: builders.today.build()),
-            TabSpec(title: "게임", symbol: "gamecontroller", root: builders.games.build()),
-            TabSpec(title: "앱", symbol: "square.stack.3d.up", root: builders.apps.build()),
-            TabSpec(title: "아케이드", symbol: "arcade.stick", root: builders.arcade.build()),
-            TabSpec(title: "검색", symbol: "magnifyingglass", root: builders.search.build()),
+            makeTab(title: "투데이", symbol: "doc.text.image", infra: infra) { coordinator in
+                DefaultTodayBuilder(
+                    iTunesClient: infra.iTunesClient,
+                    imageLoader: infra.imageLoader,
+                    router: coordinator
+                ).build()
+            },
+            makeTab(title: "게임", symbol: "gamecontroller", infra: infra) { coordinator in
+                DefaultGamesBuilder(
+                    iTunesClient: infra.iTunesClient,
+                    imageLoader: infra.imageLoader,
+                    router: coordinator
+                ).build()
+            },
+            makeTab(title: "앱", symbol: "square.stack.3d.up", infra: infra) { coordinator in
+                DefaultAppsBuilder(
+                    iTunesClient: infra.iTunesClient,
+                    imageLoader: infra.imageLoader,
+                    router: coordinator
+                ).build()
+            },
+            makeTab(title: "아케이드", symbol: "arcade.stick", infra: infra) { coordinator in
+                DefaultArcadeBuilder(
+                    iTunesClient: infra.iTunesClient,
+                    imageLoader: infra.imageLoader,
+                    router: coordinator
+                ).build()
+            },
+            makeTab(title: "검색", symbol: "magnifyingglass", infra: infra) { coordinator in
+                DefaultSearchBuilder(
+                    iTunesClient: infra.iTunesClient,
+                    recentSearchStore: infra.recentSearchStore,
+                    imageLoader: infra.imageLoader,
+                    router: coordinator
+                ).build()
+            },
         ]
     }
 
-    @MainActor
-    private func makeTabBar(tabs: [TabSpec]) -> UITabBarController {
-        let controllers = tabs.map { tab -> UIViewController in
-            let nav = UINavigationController(rootViewController: tab.root)
-            nav.tabBarItem = UITabBarItem(
-                title: tab.title,
-                image: UIImage(systemName: tab.symbol),
-                selectedImage: nil
-            )
-            return nav
-        }
+    func makeRootTabBarController() -> UITabBarController {
+        let infra = makeInfra()
+        let controllers = makeTabControllers(infra: infra)
 
         let tabBar = UITabBarController()
         tabBar.viewControllers = controllers
@@ -130,12 +147,5 @@ struct AppComposition {
             tabBar.selectedIndex = requestedTab
         }
         return tabBar
-    }
-
-    @MainActor
-    func makeRootTabBarController() -> UITabBarController {
-        let builders = makeBuilders()
-        let tabs = makeTabs(from: builders)
-        return makeTabBar(tabs: tabs)
     }
 }

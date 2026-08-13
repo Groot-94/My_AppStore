@@ -7,28 +7,23 @@
 
 import UIKit
 import GamesInterface
-import AppDetailInterface
-import SeeAllInterface
 import ITunesKit
 import CoreKit
 
-/// Games 구현 Builder. Core 인프라 + AppDetail/SeeAll 계약을 주입받아 조립한다.
+/// Games 구현 Builder. Core 인프라 + 자기 Routing delegate 를 주입받아 조립한다.
 public struct DefaultGamesBuilder: GamesBuilder {
     private let iTunesClient: AppLookup & ChartFeeding
     private let imageLoader: ImageLoading
-    private let appDetail: AppDetailBuilder
-    private let seeAll: SeeAllBuilder
+    private weak var router: GamesRouting?
 
     public init(
         iTunesClient: AppLookup & ChartFeeding,
         imageLoader: ImageLoading,
-        appDetail: AppDetailBuilder,
-        seeAll: SeeAllBuilder
+        router: GamesRouting
     ) {
         self.iTunesClient = iTunesClient
         self.imageLoader = imageLoader
-        self.appDetail = appDetail
-        self.seeAll = seeAll
+        self.router = router
     }
 
     @MainActor
@@ -38,16 +33,7 @@ public struct DefaultGamesBuilder: GamesBuilder {
         let viewModel = GamesViewModel(useCase: useCase)
 
         let viewController = GamesViewController(viewModel: viewModel, imageLoader: imageLoader)
-        let appDetail = appDetail
-        let seeAll = seeAll
-        viewController.onSelectApp = { [weak viewController] appID in
-            guard let viewController else { return }
-            viewController.navigationController?.pushViewController(appDetail.build(appID: appID), animated: true)
-        }
-        viewController.onSeeAll = { [weak viewController] input in
-            guard let viewController else { return }
-            viewController.navigationController?.pushViewController(seeAll.build(input: input), animated: true)
-        }
+        viewController.router = router
         return viewController
     }
 }

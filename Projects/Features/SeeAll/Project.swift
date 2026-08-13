@@ -8,10 +8,9 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// SeeAll: Impl → AppDetailInterface + Persistence(이미지 로더).
+// SeeAll: 타 피처 의존 0. 상향 라우팅은 SeeAllRouting delegate 로만 방출.
 let project = Project.feature(
     name: "SeeAll",
-    implDependencies: [.featureInterface("AppDetail")],
     tests: true,
     testDependencies: [
         .iTunesKit,
@@ -19,6 +18,5 @@ let project = Project.feature(
     ],
     testHasResources: true,
     testing: true,
-    example: true,
-    exampleDependencies: [.featureTesting("AppDetail")]
+    example: true
 )

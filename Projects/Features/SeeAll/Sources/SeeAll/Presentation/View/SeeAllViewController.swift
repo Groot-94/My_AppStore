@@ -8,13 +8,14 @@
 import UIKit
 import DesignSystem
 import CoreKit
+import SeeAllInterface
 
 /// 차트 전체 목록 화면(UIKit). `ChartRankRow` 목록 + 로딩/실패/빈 상태 오버레이.
 final class SeeAllViewController: UIViewController {
     private let viewModel: SeeAllViewModel
     private let imageLoader: ImageLoading
-    /// 행 탭 시 상위(Builder)로 위임하는 네비게이션 훅.
-    var onSelectApp: (Int) -> Void = { _ in }
+    /// 행 탭 시 상향 이벤트를 방출하는 라우팅 delegate. App(Coordinator)이 소유.
+    weak var router: SeeAllRouting?
 
     private lazy var collectionView = makeCollectionView()
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
@@ -169,6 +170,6 @@ extension SeeAllViewController: UICollectionViewDataSource, UICollectionViewDele
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        onSelectApp(items[indexPath.item].id)
+        router?.seeAllDidSelectApp(id: items[indexPath.item].id)
     }
 }

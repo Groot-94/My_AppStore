@@ -8,6 +8,7 @@
 import UIKit
 import DesignSystem
 import CoreKit
+import SearchInterface
 
 /// 검색 화면(UIKit). `UISearchController` + 결과/최근검색어 테이블.
 ///
@@ -17,8 +18,8 @@ final class SearchViewController: UIViewController {
 
     private let viewModel: SearchViewModel
     private let imageLoader: ImageLoading
-    /// 결과 행 탭 시 상위(Builder)로 위임하는 네비게이션 훅. Builder 가 생성 후 주입.
-    var onSelectApp: (Int) -> Void = { _ in }
+    /// 결과 행 탭 시 상향 이벤트를 방출하는 라우팅 delegate. App(Coordinator)이 소유.
+    weak var router: SearchRouting?
 
     private let searchController = UISearchController(searchResultsController: nil)
     private let tableView = UITableView(frame: .zero, style: .plain)
@@ -241,7 +242,7 @@ extension SearchViewController: UITableViewDataSource, UITableViewDelegate {
             Task { await viewModel.selectRecent(term) }
 
         case .results:
-            onSelectApp(displayedResults[indexPath.row].id)
+            router?.searchDidSelectApp(id: displayedResults[indexPath.row].id)
         }
     }
 

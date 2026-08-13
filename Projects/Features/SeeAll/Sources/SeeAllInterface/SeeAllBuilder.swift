@@ -32,3 +32,9 @@ public struct SeeAllInput: Sendable {
 public protocol SeeAllBuilder {
     func build(input: SeeAllInput) -> UIViewController
 }
+
+/// SeeAll 상향 이벤트 계약. 피처는 이 delegate 로만 라우팅 의사를 방출하고 App 이 목적지를 소유한다.
+@MainActor
+public protocol SeeAllRouting: AnyObject {
+    func seeAllDidSelectApp(id: Int)
+}

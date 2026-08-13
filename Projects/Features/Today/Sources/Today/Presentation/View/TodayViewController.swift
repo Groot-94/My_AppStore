@@ -8,13 +8,14 @@
 import UIKit
 import DesignSystem
 import CoreKit
+import TodayInterface
 
 /// Today 탭 화면(UIKit). 날짜 헤더 + 카드 세로 스크롤. Pull-to-refresh 지원.
 final class TodayViewController: UIViewController {
     private let viewModel: TodayViewModel
     private let imageLoader: ImageLoading
-    /// 앱 선택 → AppDetail push 훅. Builder 가 주입.
-    var onSelectApp: (Int) -> Void = { _ in }
+    /// 앱 선택 시 상향 이벤트를 방출하는 라우팅 delegate. App(Coordinator)이 소유.
+    weak var router: TodayRouting?
 
     private let container = StateContainerView(
         layoutMargins: UIEdgeInsets(top: 8, left: 16, bottom: 32, right: 16),
@@ -137,14 +138,14 @@ final class TodayViewController: UIViewController {
     private func makeLargeCard(_ card: TodayCard) -> UIView {
         let cardView = TodayLargeCardView()
         cardView.configure(with: card, loader: imageLoader)
-        cardView.onSelect = { [weak self] appID in self?.onSelectApp(appID) }
+        cardView.onSelect = { [weak self] appID in self?.router?.todayDidSelectApp(id: appID) }
         return cardView
     }
 
     private func makeListCard(_ card: TodayCard) -> UIView {
         let cardView = TodayListCardView()
         cardView.configure(with: card, loader: imageLoader)
-        cardView.onSelect = { [weak self] appID in self?.onSelectApp(appID) }
+        cardView.onSelect = { [weak self] appID in self?.router?.todayDidSelectApp(id: appID) }
         return cardView
     }
 

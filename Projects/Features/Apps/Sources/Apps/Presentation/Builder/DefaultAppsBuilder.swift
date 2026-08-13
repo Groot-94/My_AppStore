@@ -7,28 +7,23 @@
 
 import UIKit
 import AppsInterface
-import AppDetailInterface
-import SeeAllInterface
 import ITunesKit
 import CoreKit
 
-/// Apps 구현 Builder. Core 인프라 + AppDetail/SeeAll 계약을 주입받아 조립한다.
+/// Apps 구현 Builder. Core 인프라 + 자기 Routing delegate 를 주입받아 조립한다.
 public struct DefaultAppsBuilder: AppsBuilder {
     private let iTunesClient: AppLookup & ChartFeeding
     private let imageLoader: ImageLoading
-    private let appDetail: AppDetailBuilder
-    private let seeAll: SeeAllBuilder
+    private weak var router: AppsRouting?
 
     public init(
         iTunesClient: AppLookup & ChartFeeding,
         imageLoader: ImageLoading,
-        appDetail: AppDetailBuilder,
-        seeAll: SeeAllBuilder
+        router: AppsRouting
     ) {
         self.iTunesClient = iTunesClient
         self.imageLoader = imageLoader
-        self.appDetail = appDetail
-        self.seeAll = seeAll
+        self.router = router
     }
 
     @MainActor
@@ -38,16 +33,7 @@ public struct DefaultAppsBuilder: AppsBuilder {
         let viewModel = AppsViewModel(useCase: useCase)
 
         let viewController = AppsViewController(viewModel: viewModel, imageLoader: imageLoader)
-        let appDetail = appDetail
-        let seeAll = seeAll
-        viewController.onSelectApp = { [weak viewController] appID in
-            guard let viewController else { return }
-            viewController.navigationController?.pushViewController(appDetail.build(appID: appID), animated: true)
-        }
-        viewController.onSeeAll = { [weak viewController] input in
-            guard let viewController else { return }
-            viewController.navigationController?.pushViewController(seeAll.build(input: input), animated: true)
-        }
+        viewController.router = router
         return viewController
     }
 }

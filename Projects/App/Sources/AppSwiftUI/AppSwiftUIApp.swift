@@ -11,7 +11,13 @@ import SwiftUI
 @main
 struct AppSwiftUIApp: App {
     /// 조립은 앱 수명 동안 1회만 — 뷰 재평가로 인프라가 다시 만들어지지 않도록 값으로 들고 있는다.
-    private let tabs = AppComposition().makeTabs()
+    /// Composition 은 탭별 Coordinator(=router)를 소유하므로 앱 수명 동안 유지한다(VC 는 router 를 약참조).
+    private let composition = AppComposition()
+    private let tabs: [AppTab]
+
+    init() {
+        tabs = composition.makeTabs()
+    }
 
     var body: some Scene {
         WindowGroup {

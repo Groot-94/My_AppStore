@@ -8,16 +8,14 @@
 import UIKit
 import DesignSystem
 import CoreKit
-import SeeAllInterface
+import AppsInterface
 
 /// Apps 탭 화면(UIKit). 세로 스크롤 컨테이너에 추천/차트/카테고리 섹션을 조립한다.
 final class AppsViewController: UIViewController {
     private let viewModel: AppsViewModel
     private let imageLoader: ImageLoading
-    /// 항목 탭 → AppDetail push 훅. Builder 가 주입.
-    var onSelectApp: (Int) -> Void = { _ in }
-    /// "모두 보기" 탭 → SeeAll push 훅. Builder 가 주입.
-    var onSeeAll: (SeeAllInput) -> Void = { _ in }
+    /// 항목 선택/"모두 보기" 시 상향 이벤트를 방출하는 라우팅 delegate. App(Coordinator)이 소유.
+    weak var router: AppsRouting?
 
     private let container = StateContainerView(
         layoutMargins: UIEdgeInsets(top: 16, left: 0, bottom: 32, right: 0),
@@ -104,12 +102,12 @@ final class AppsViewController: UIViewController {
         }
         if !feed.topFree.isEmpty {
             container.contentStack.addArrangedSubview(
-                makeChartSection(title: topFreeTitle, items: feed.topFree, feed: .topFree)
+                makeChartSection(title: topFreeTitle, items: feed.topFree, kind: .topFree)
             )
         }
         if !feed.topPaid.isEmpty {
             container.contentStack.addArrangedSubview(
-                makeChartSection(title: topPaidTitle, items: feed.topPaid, feed: .topPaid)
+                makeChartSection(title: topPaidTitle, items: feed.topPaid, kind: .topPaid)
             )
         }
         if !feed.categories.isEmpty {
@@ -127,7 +125,7 @@ final class AppsViewController: UIViewController {
             },
             loader: imageLoader
         )
-        carousel.onSelect = { [weak self] id in self?.onSelectApp(id) }
+        carousel.onSelect = { [weak self] id in self?.router?.appsDidSelectApp(id: id) }
         carousel.translatesAutoresizingMaskIntoConstraints = false
         carousel.heightAnchor.constraint(equalToConstant: 240).isActive = true
 
@@ -137,9 +135,10 @@ final class AppsViewController: UIViewController {
         return section
     }
 
-    private func makeChartSection(title: String, items: [ChartItem], feed: ChartFeedKind) -> UIView {
-        let input = SeeAllInput(title: title, feed: feed, genreID: nil)
-        let header = makeHeader(title: title, seeAll: { [weak self] in self?.onSeeAll(input) })
+    private func makeChartSection(title: String, items: [ChartItem], kind: AppsChartKind) -> UIView {
+        let header = makeHeader(title: title, seeAll: { [weak self] in
+            self?.router?.appsDidRequestSeeAll(title: title, kind: kind, genreID: nil)
+        })
 
         let rows = UIStackView()
         rows.axis = .vertical
@@ -157,7 +156,7 @@ final class AppsViewController: UIViewController {
     private func makeChartRow(_ item: ChartItem) -> UIView {
         let row = ChartRowView()
         row.configure(with: model(for: item), loader: imageLoader)
-        row.onTap = { [weak self] in self?.onSelectApp(item.id) }
+        row.onTap = { [weak self] in self?.router?.appsDidSelectApp(id: item.id) }
         row.onGetTap = { [weak row, weak self] in
             guard let row, let self else { return }
             row.configure(with: self.model(for: item, actionTitle: CommonStrings.Action.open), loader: nil)

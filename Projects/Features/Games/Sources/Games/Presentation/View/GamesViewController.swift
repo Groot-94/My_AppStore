@@ -8,15 +8,15 @@
 import UIKit
 import DesignSystem
 import CoreKit
-import SeeAllInterface
+import GamesInterface
 
 /// Games 탭 화면(UIKit). Apps 와 동형 — 세로 스크롤에 추천/게임 차트/하위 카테고리 섹션 조립.
-/// SeeAll 입력의 genreID 는 6014(게임)로 전달한다.
+/// "모두 보기" 요청의 genreID 는 6014(게임)로 전달한다.
 final class GamesViewController: UIViewController {
     private let viewModel: GamesViewModel
     private let imageLoader: ImageLoading
-    var onSelectApp: (Int) -> Void = { _ in }
-    var onSeeAll: (SeeAllInput) -> Void = { _ in }
+    /// 항목 선택/"모두 보기" 시 상향 이벤트를 방출하는 라우팅 delegate. App(Coordinator)이 소유.
+    weak var router: GamesRouting?
 
     private let container = StateContainerView(
         layoutMargins: UIEdgeInsets(top: 16, left: 0, bottom: 32, right: 0),
@@ -104,12 +104,12 @@ final class GamesViewController: UIViewController {
         }
         if !feed.topFree.isEmpty {
             container.contentStack.addArrangedSubview(
-                makeChartSection(title: topFreeTitle, items: feed.topFree, feed: .topFree)
+                makeChartSection(title: topFreeTitle, items: feed.topFree, kind: .topFree)
             )
         }
         if !feed.topPaid.isEmpty {
             container.contentStack.addArrangedSubview(
-                makeChartSection(title: topPaidTitle, items: feed.topPaid, feed: .topPaid)
+                makeChartSection(title: topPaidTitle, items: feed.topPaid, kind: .topPaid)
             )
         }
         if !feed.categories.isEmpty {
@@ -127,7 +127,7 @@ final class GamesViewController: UIViewController {
             },
             loader: imageLoader
         )
-        carousel.onSelect = { [weak self] id in self?.onSelectApp(id) }
+        carousel.onSelect = { [weak self] id in self?.router?.gamesDidSelectApp(id: id) }
         carousel.translatesAutoresizingMaskIntoConstraints = false
         carousel.heightAnchor.constraint(equalToConstant: 240).isActive = true
 
@@ -137,9 +137,11 @@ final class GamesViewController: UIViewController {
         return section
     }
 
-    private func makeChartSection(title: String, items: [ChartItem], feed: ChartFeedKind) -> UIView {
-        let input = SeeAllInput(title: title, feed: feed, genreID: gamesGenreID)
-        let header = makeHeader(title: title, seeAll: { [weak self] in self?.onSeeAll(input) })
+    private func makeChartSection(title: String, items: [ChartItem], kind: GamesChartKind) -> UIView {
+        let header = makeHeader(title: title, seeAll: { [weak self] in
+            guard let self else { return }
+            self.router?.gamesDidRequestSeeAll(title: title, kind: kind, genreID: self.gamesGenreID)
+        })
 
         let rows = UIStackView()
         rows.axis = .vertical
@@ -157,7 +159,7 @@ final class GamesViewController: UIViewController {
     private func makeChartRow(_ item: ChartItem) -> UIView {
         let row = ChartRowView()
         row.configure(with: model(for: item), loader: imageLoader)
-        row.onTap = { [weak self] in self?.onSelectApp(item.id) }
+        row.onTap = { [weak self] in self?.router?.gamesDidSelectApp(id: item.id) }
         row.onGetTap = { [weak row, weak self] in
             guard let row, let self else { return }
             row.configure(with: self.model(for: item, actionTitle: CommonStrings.Action.open), loader: nil)

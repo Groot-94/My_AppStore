@@ -8,13 +8,14 @@
 import UIKit
 import DesignSystem
 import CoreKit
+import ArcadeInterface
 
 /// Arcade 탭 화면(UIKit). 히어로 배너(정적) + 캐러셀 2섹션 + 구독 안내 배너(UI만).
 final class ArcadeViewController: UIViewController {
     private let viewModel: ArcadeViewModel
     private let imageLoader: ImageLoading
-    /// 게임 선택 → AppDetail push 훅. Builder 가 주입.
-    var onSelectApp: (Int) -> Void = { _ in }
+    /// 게임 선택 시 상향 이벤트를 방출하는 라우팅 delegate. App(Coordinator)이 소유.
+    weak var router: ArcadeRouting?
 
     private let container = StateContainerView(
         layoutMargins: UIEdgeInsets(top: 16, left: 0, bottom: 32, right: 0),
@@ -144,7 +145,7 @@ final class ArcadeViewController: UIViewController {
             },
             loader: imageLoader
         )
-        carousel.onSelect = { [weak self] id in self?.onSelectApp(id) }
+        carousel.onSelect = { [weak self] id in self?.router?.arcadeDidSelectApp(id: id) }
         carousel.translatesAutoresizingMaskIntoConstraints = false
         carousel.heightAnchor.constraint(equalToConstant: 240).isActive = true
 

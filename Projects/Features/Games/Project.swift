@@ -8,13 +8,9 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// Games: Impl → AppDetailInterface + SeeAllInterface + Persistence. 정적 큐레이션 리소스 포함.
+// Games: 타 피처 의존 0. 상향 라우팅은 GamesRouting delegate 로만 방출. 정적 큐레이션 리소스 포함.
 let project = Project.feature(
     name: "Games",
-    implDependencies: [
-        .featureInterface("AppDetail"),
-        .featureInterface("SeeAll"),
-    ],
     implHasResources: true,
     tests: true,
     testDependencies: [
@@ -23,9 +19,5 @@ let project = Project.feature(
     ],
     testHasResources: true,
     testing: true,
-    example: true,
-    exampleDependencies: [
-        .featureTesting("AppDetail"),
-        .featureTesting("SeeAll"),
-    ]
+    example: true
 )
