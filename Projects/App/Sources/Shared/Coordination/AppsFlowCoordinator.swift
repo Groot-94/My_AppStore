@@ -18,13 +18,14 @@ import SeeAllInterface
 /// 라우트를 하나라도 추가하면 이 타입이 컴파일 실패하므로 App 이 처리를 누락할 수 없다.
 @MainActor
 final class AppsFlowCoordinator: Coordinator, AppDetailPresenting, AppsRouting, SeeAllRouting {
-    let navigationController: UINavigationController
+    var onFinish: (() -> Void)?
+    let router: Router
     let appDetailBuilder: AppDetailBuilder
 
     private let infra: AppInfra
 
-    init(navigationController: UINavigationController, infra: AppInfra, appDetailBuilder: AppDetailBuilder) {
-        self.navigationController = navigationController
+    init(router: Router, infra: AppInfra, appDetailBuilder: AppDetailBuilder) {
+        self.router = router
         self.infra = infra
         self.appDetailBuilder = appDetailBuilder
     }
@@ -35,7 +36,7 @@ final class AppsFlowCoordinator: Coordinator, AppDetailPresenting, AppsRouting, 
             imageLoader: infra.imageLoader,
             router: self
         ).build()
-        navigationController.setViewControllers([root], animated: false)
+        router.setRoot(root)
     }
 
     private func pushSeeAll(title: String, feed: ChartFeedKind, genreID: Int?) {
@@ -45,7 +46,7 @@ final class AppsFlowCoordinator: Coordinator, AppDetailPresenting, AppsRouting, 
             imageLoader: infra.imageLoader,
             router: self
         ).build(input: input)
-        navigationController.pushViewController(viewController, animated: true)
+        router.push(viewController, animated: true)
     }
 
     // MARK: - AppsRouting

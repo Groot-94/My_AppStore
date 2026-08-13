@@ -17,27 +17,27 @@ import AppDetailInterface
 struct FlowCoordinatorFactory {
     let infra: AppInfra
 
-    func makeToday(_ navigationController: UINavigationController) -> Coordinator {
-        TodayFlowCoordinator(navigationController: navigationController, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+    func makeToday(_ router: Router) -> Coordinator {
+        TodayFlowCoordinator(router: router, infra: infra, appDetailBuilder: makeAppDetailBuilder())
     }
 
-    func makeGames(_ navigationController: UINavigationController) -> Coordinator {
-        GamesFlowCoordinator(navigationController: navigationController, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+    func makeGames(_ router: Router) -> Coordinator {
+        GamesFlowCoordinator(router: router, infra: infra, appDetailBuilder: makeAppDetailBuilder())
     }
 
-    func makeApps(_ navigationController: UINavigationController) -> Coordinator {
-        AppsFlowCoordinator(navigationController: navigationController, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+    func makeApps(_ router: Router) -> Coordinator {
+        AppsFlowCoordinator(router: router, infra: infra, appDetailBuilder: makeAppDetailBuilder())
     }
 
-    func makeArcade(_ navigationController: UINavigationController) -> Coordinator {
-        ArcadeFlowCoordinator(navigationController: navigationController, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+    func makeArcade(_ router: Router) -> Coordinator {
+        ArcadeFlowCoordinator(router: router, infra: infra, appDetailBuilder: makeAppDetailBuilder())
     }
 
-    func makeSearch(_ navigationController: UINavigationController) -> Coordinator {
-        SearchFlowCoordinator(navigationController: navigationController, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+    func makeSearch(_ router: Router) -> Coordinator {
+        SearchFlowCoordinator(router: router, infra: infra, appDetailBuilder: makeAppDetailBuilder())
     }
 
-    private func makeAppDetailBuilder() -> AppDetailBuilder {
+    func makeAppDetailBuilder() -> AppDetailBuilder {
         DefaultAppDetailBuilder(
             iTunesClient: infra.iTunesClient,
             cache: infra.cache,

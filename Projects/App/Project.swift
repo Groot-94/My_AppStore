@@ -50,6 +50,12 @@ let project = Project(
                         ]
                     ],
                 ],
+                "CFBundleURLTypes": [
+                    [
+                        "CFBundleURLName": "\(Constants.bundleIDPrefix).app",
+                        "CFBundleURLSchemes": ["myappstore"],
+                    ]
+                ],
             ]),
             sources: ["Sources/AppUIKit/**", "Sources/Shared/**"],
             dependencies: appFeatureDependencies,
@@ -63,6 +69,12 @@ let project = Project(
             deploymentTargets: Constants.deploymentTarget,
             infoPlist: .extendingDefault(with: [
                 "UILaunchScreen": ["UIColorName": ""],
+                "CFBundleURLTypes": [
+                    [
+                        "CFBundleURLName": "\(Constants.bundleIDPrefix).swiftui",
+                        "CFBundleURLSchemes": ["myappstore"],
+                    ]
+                ],
             ]),
             sources: ["Sources/AppSwiftUI/**", "Sources/Shared/**"],
             dependencies: appFeatureDependencies,

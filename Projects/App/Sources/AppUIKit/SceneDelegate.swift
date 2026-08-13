@@ -23,5 +23,21 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = appCoordinator.tabBarController
         window.makeKeyAndVisible()
         self.window = window
+
+        // 콜드 스타트 딥링크(앱이 URL 로 실행된 경우).
+        connectionOptions.urlContexts.forEach { appCoordinator.handle($0.url) }
+
+        // 스크린샷·테스트용: 런치 인자로 받은 딥링크도 동일한 처리 경로로 흘려보낸다.
+        if let url = LaunchArguments.deepLink {
+            appCoordinator.handle(url)
+        }
+        if LaunchArguments.presentSettings {
+            appCoordinator.presentSettings()
+        }
+    }
+
+    /// 실행 중 딥링크(앱이 이미 떠 있을 때 URL 수신).
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        URLContexts.forEach { appCoordinator.handle($0.url) }
     }
 }

@@ -26,4 +26,14 @@ enum LaunchArguments {
         let value = UserDefaults.standard.integer(forKey: "detailAppID")
         return value > 0 ? value : nil
     }
+
+    /// `-deepLink <url>` — 콜드 스타트 시 딥링크 URL 을 실제 처리 경로로 그대로 흘려보낸다(스크린샷용).
+    static var deepLink: URL? {
+        UserDefaults.standard.string(forKey: "deepLink").flatMap(URL.init(string:))
+    }
+
+    /// `-presentSettings YES` — 시작 직후 설정 모달을 실제 진입 경로로 present 한다(스크린샷용).
+    static var presentSettings: Bool {
+        UserDefaults.standard.bool(forKey: "presentSettings")
+    }
 }

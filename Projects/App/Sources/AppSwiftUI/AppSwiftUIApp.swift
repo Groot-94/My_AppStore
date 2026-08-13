@@ -21,7 +21,8 @@ struct AppSwiftUIApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootTabView(tabs: tabs)
+            RootTabView(tabs: tabs, selectedTab: composition.selectedTab)
+                .onOpenURL { composition.handle($0) }
         }
     }
 }
