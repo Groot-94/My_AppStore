@@ -52,9 +52,9 @@ graph TD
     end
 ```
 
-- **피처는 다른 피처의 구현을 import하지 않습니다.** 다른 피처가 필요하면 그 피처의 `*Interface`(계약)만 의존하고, 구현체는 App(Composition Root)이 주입합니다 — 피처 간 직접 결합이 없습니다.
+- **피처는 다른 피처를 `*Interface` 조차 의존하지 않습니다.** 피처 간 화면 이동이 필요하면 피처는 자기 소유 `*Routing`(delegate) 프로토콜로 원시 이벤트(`searchDidSelectApp(id:)` 등)만 위로 방출하고, 목적지 조립·이동은 App이 소유합니다 — 피처는 완전 독립 island입니다(`tuist graph` 피처↔피처 엣지 0).
 - **공용 Domain 모듈을 두지 않았습니다.** 피처 경계를 원시 타입(`build(appID: Int)`)만 넘기 때문에 엔티티·UseCase·Repository는 피처가 소유합니다. 화면마다 필요한 필드만 가진 엔티티를 쓰고, 전 피처가 공통으로 반복하는 iTunes 응답 디코딩(DTO)만 `ITunesKit`으로 모았습니다.
-- god-router 대신 **계약 주입**을 사용합니다. 각 피처가 자기 진입 계약을 노출하고 필요한 쪽이 주입받아, 어느 피처가 무엇을 호출하는지 타입으로 드러납니다.
+- **라우팅은 App Coordinator가 소유**합니다(아래 [라우팅](#라우팅) 참고). 처음엔 "계약 주입"(피처가 상대 피처 `*Interface` 의존)으로 갔다가, 피처를 완전 독립시키기 위해 이동 로직을 App으로 이관했습니다. 라우트를 하나라도 추가하면 Coordinator가 컴파일 실패하므로 App이 처리를 누락할 수 없습니다.
 - Core 모듈도 피처와 동일하게 **모듈별 독립 프로젝트**로 분리해 소유권과 매니페스트를 나눴습니다.
 
 ### 피처 내부 — 클린 아키텍처
@@ -80,6 +80,17 @@ View ──행동──▶ ViewModel ──▶ UseCase ──▶ Repository(프�
 
 - ViewModel은 `@Observable` + `@MainActor`이며 UIKit/SwiftUI를 import하지 않습니다. **검색·앱 상세를 SwiftUI로 옮길 때 ViewModel은 수정하지 않았습니다** — UI 비의존 설계가 실제로 검증된 지점입니다. 그 과정에서 유일하게 필요했던 변경은 ViewModel이 참조하던 표시 문자열(`CommonStrings`)을 `DesignSystem`에서 `CoreKit`으로 옮긴 것이었습니다.
 - UIKit에서의 관찰은 `withObservationTracking` 재귀 재등록 유틸(`ObservationSubscription`)로 처리합니다. SwiftUI는 `@Observable`을 그대로 추적하므로 이 유틸이 필요하지 않습니다.
+
+## 라우팅
+
+피처는 화면 이동을 직접 하지 않습니다. 자기 `*Routing`(delegate)로 이벤트만 위로 던지고, App의 Coordinator가 목적지를 조립해 이동합니다. UIKit·SwiftUI 두 앱이 같은 `*Routing` 계약을 공유합니다.
+
+- **Coordinator 패턴** — `AppCoordinator`(루트)가 탭별 네비게이션 스택을 소유하고, 플로우별 코디네이터(`SearchFlowCoordinator` 등, 각자 `start()`)를 조립합니다. 각 플로우 코디네이터는 **자기 피처의 `*Routing`만** 구현하므로(SRP), 라우트 추가 시 컴파일러가 누락을 막습니다.
+- **Coordinator / Router 분리** — 이동 흐름(Coordinator)과 제시(`NavigationRouter`: `push`/`present`/`popToRoot`/`dismiss`)를 나눴습니다. 코디네이터는 `router.push(...)`만 호출하고, 스와이프 dismiss도 `present`의 `onDismiss`로 통일됩니다.
+- **딥링크** — `myappstore://app/{id}`, `myappstore://chart/{free|paid}`를 `DeepLinkParser`(파싱)와 `AppCoordinator.handle(_:)`(라우팅)로 분리 처리합니다. 딥링크도 일반 이동과 **같은 목적지 조립 코드**를 경유해 "화면 도달의 단일 진실 소스"를 유지합니다.
+- **자식 생명주기** — 모달/일회성 플로우는 `onFinish` + `attach`/`detach`로 관리합니다(닫기·스와이프 dismiss 시 자동 detach).
+
+라우팅 코드는 `Sources/Shared/{Coordination,Composition,Navigation}` 에 두 앱이 함께 컴파일합니다 — 피처는 어느 앱의 라우팅에도 묶이지 않습니다.
 
 ## 모듈 구성
 
