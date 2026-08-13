@@ -15,12 +15,13 @@ import SearchInterface
 /// 라우트(프로토콜 메서드)를 하나라도 추가하면 이 타입이 컴파일 실패하므로 App 이 처리를 누락할 수 없다.
 @MainActor
 final class SearchFlowCoordinator: Coordinator, AppDetailPresenting, SearchRouting {
-    let navigationController = UINavigationController()
+    let navigationController: UINavigationController
     let appDetailBuilder: AppDetailBuilder
 
     private let infra: AppInfra
 
-    init(infra: AppInfra, appDetailBuilder: AppDetailBuilder) {
+    init(navigationController: UINavigationController, infra: AppInfra, appDetailBuilder: AppDetailBuilder) {
+        self.navigationController = navigationController
         self.infra = infra
         self.appDetailBuilder = appDetailBuilder
     }

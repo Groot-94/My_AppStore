@@ -8,7 +8,8 @@
 import UIKit
 import AppDetailInterface
 
-/// 플로우 하나의 라우팅 소유자. 자기 `UINavigationController` 스택을 소유하고 `start()` 에서 루트를 세운다.
+/// 플로우 하나의 라우팅 담당. 네비게이션 스택은 루트(AppCoordinator)가 소유해 주입하고,
+/// `start()` 에서 루트 화면을 세우며 이후 이동(push/present)을 관리한다.
 @MainActor
 protocol Coordinator: AnyObject {
     var navigationController: UINavigationController { get }

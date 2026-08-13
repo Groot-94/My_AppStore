@@ -24,26 +24,32 @@ final class AppComposition {
 
     func makeTabs() -> [AppTab] {
         [
-            AppTab(id: 0, title: "투데이", symbol: "doc.text.image",
-                   content: interopTab(TodayFlowCoordinator(infra: infra, appDetailBuilder: makeAppDetailBuilder()))),
-            AppTab(id: 1, title: "게임", symbol: "gamecontroller",
-                   content: interopTab(GamesFlowCoordinator(infra: infra, appDetailBuilder: makeAppDetailBuilder()))),
-            AppTab(id: 2, title: "앱", symbol: "square.stack.3d.up",
-                   content: interopTab(AppsFlowCoordinator(infra: infra, appDetailBuilder: makeAppDetailBuilder()))),
-            AppTab(id: 3, title: "아케이드", symbol: "arcade.stick",
-                   content: interopTab(ArcadeFlowCoordinator(infra: infra, appDetailBuilder: makeAppDetailBuilder()))),
+            AppTab(id: 0, title: "투데이", symbol: "doc.text.image", content: interopTab {
+                TodayFlowCoordinator(navigationController: $0, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+            }),
+            AppTab(id: 1, title: "게임", symbol: "gamecontroller", content: interopTab {
+                GamesFlowCoordinator(navigationController: $0, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+            }),
+            AppTab(id: 2, title: "앱", symbol: "square.stack.3d.up", content: interopTab {
+                AppsFlowCoordinator(navigationController: $0, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+            }),
+            AppTab(id: 3, title: "아케이드", symbol: "arcade.stick", content: interopTab {
+                ArcadeFlowCoordinator(navigationController: $0, infra: infra, appDetailBuilder: makeAppDetailBuilder())
+            }),
             AppTab(id: 4, title: "검색", symbol: "magnifyingglass", content: makeSearchTab()),
         ]
     }
 
     // MARK: - UIKit 인터롭
 
-    /// 공유 플로우 코디네이터를 시작해 그 `UINavigationController` 를 탭 콘텐츠로 호스팅한다.
-    private func interopTab(_ coordinator: Coordinator) -> AnyView {
+    /// 네비게이션 스택을 생성(루트 소유)해 코디네이터에 주입·시작하고, 그 스택을 탭 콘텐츠로 호스팅한다.
+    private func interopTab(_ makeCoordinator: (UINavigationController) -> Coordinator) -> AnyView {
+        let navigationController = UINavigationController()
+        let coordinator = makeCoordinator(navigationController)
         coordinator.start()
         children.append(coordinator)
         return AnyView(
-            UIKitFeatureView(navigationController: coordinator.navigationController)
+            UIKitFeatureView(navigationController: navigationController)
                 .ignoresSafeArea()
         )
     }
